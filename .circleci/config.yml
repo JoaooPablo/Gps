@@ -5,7 +5,7 @@ jobs:
         docker:
             - image: arvindr226/alpine-ssh
         steps:
-            - run: ssh -oStrictHostKeyChecking=no -v ubuntu@100.24.161.99 "./deploy.sh"
+           -run: ssh -oStrictHostKeyChecking=no -v $USER@$DNS "./deploy.sh"
 
 workflows:
     deploy-to-ec2:
