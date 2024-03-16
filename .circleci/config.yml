@@ -1,15 +1,14 @@
 version: 2.1
 
 jobs:
-  deploy:
-    docker:
-      - image: arvindr226/alpine-ssh
-    steps:
-      - run: |
-          ssh -oStrictHostKeyChecking=no -v ssh ubuntu@172.31.24.84 "./deploy.sh"
+    deploy:
+        docker:
+            - image: arvindr226/alpine-ssh
+        steps:
+            - run: ssh -oStrictHostKeyChecking=no -v $USER@$DNS "./deploy.sh"
 
 workflows:
-  deploy-to-ec2:
-    jobs:
-      - deploy
+    deploy-to-ec2:
+        jobs:
+            - deploy
 
