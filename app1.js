@@ -79,12 +79,16 @@ udpServer.on('message', async (msg, rinfo) => {
 
     console.log('Datos enviados a clientes WebSocket:', { latitud, longitud, fecha, altitud });
 
-    dbConnection.query('INSERT INTO coordenadas(fecha, latitud, longitud, altitud) VALUES(?, ?, ?, ?)', [fecha, latitud, longitud, altitud], (error, results) => {
+    dbConnection.query('INSERT IGNORE INTO coordenadas(fecha, latitud, longitud, altitud) VALUES(?, ?, ?, ?)', [fecha, latitud, longitud, altitud], (error, results) => {
       if (error) {
         console.error('Error al guardar datos en MySQL:', error.message);
         return;
       }
-      console.log('Datos guardados en MySQL:', { fecha, latitud, longitud, altitud });
+      if (results.affectedRows === 0) {
+        console.log('Datos duplicados, no se insertaron en MySQL:', { fecha, latitud, longitud, altitud });
+      } else {
+        console.log('Datos guardados en MySQL:', { fecha, latitud, longitud, altitud });
+      }
     });
   } else {
     console.error('Mensaje UDP no tiene el formato esperado:', msg.toString());
