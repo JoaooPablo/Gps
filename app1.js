@@ -119,6 +119,4 @@ app.get('/filtrar', (req, res) => {
   });
 });
 
-server.listen(port, () => {
-  console.log(`Servidor web en http://100.24.161.99:${port}`);
-});
+server.listen(port);
