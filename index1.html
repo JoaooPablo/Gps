@@ -113,10 +113,7 @@
       polyline.addLatLng([data.latitud, data.longitud]);
 
       // Actualizar el marcador con la última ubicación
-      marker.setLatLng([data.latitud, data.longitud])
-        .bindPopup(`Fecha: ${data.fecha}<br>Altitud: ${data.altitud}`)
-        .openPopup();
-
+      marker.setLatLng([data.latitud, data.longitud]
       // Centrar el mapa en la última ubicación
       map.panTo([data.latitud, data.longitud]);
     }
