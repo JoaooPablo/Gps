@@ -119,4 +119,6 @@ app.get('/filtrar', (req, res) => {
   });
 });
 
-server.listen(port);
+server.listen(port, () => {
+  console.log(Servidor web en http://${process.env.WEBSOCKET_IP}:${port});
+});
