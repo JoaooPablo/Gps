@@ -10,7 +10,6 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
-const WEBSOCKET_IP = process.env.WEBSOCKET_IP
 const port = process.env.PORT ;
 const udpPort = process.env.UDP_PORT ;
 
