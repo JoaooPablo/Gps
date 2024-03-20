@@ -85,8 +85,6 @@
   <!-- Agrega la biblioteca Leaflet -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const dotenv = require('dotenv');
-    dotenv.config();
     const socket = new WebSocket(`ws://${process.env.WEBSOCKET_IP}:80`);
     const map = L.map('map').setView([0, 0], 13); // Mapa inicial centrado en coordenadas [0, 0]
     const movingTruckIcon = L.divIcon({
