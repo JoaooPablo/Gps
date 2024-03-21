@@ -104,6 +104,11 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index1.html');
 });
 
+app.get('/getIPAddress', (req, res) => {
+  const ipAddress = req.socket.localAddress; // Obtener la dirección IP del servidor
+  res.json({ ipAddress }); // Responder con la dirección IP del servidor
+});
+
 app.get('/filtrar', (req, res) => {
   const fechaInicio = req.query.inicio;
   const fechaFin = req.query.fin;
