@@ -48,7 +48,9 @@ async function getLatestData() {
 
 
 server.on('upgrade', (request, socket, head) => {
-    io.attach(server.handleUpgrade(request, socket, head));
+    io.handleUpgrade(request, socket, head, (ws) => {
+      io.emit('connection', ws, request);
+    });
   });
   
 
