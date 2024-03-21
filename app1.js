@@ -48,16 +48,9 @@ async function getLatestData() {
 
 
 server.on('upgrade', (request, socket, head) => {
-  io.handleUpgrade(request, socket, head, async (ws) => {
-
-    const latestData = await getLatestData();
-    if (latestData) {
-      io.send(JSON.stringify(latestData));
-    }
-
-    io.emit('connection', ws, request);
+    io.attach(server.handleUpgrade(request, socket, head));
   });
-});
+  
 
 udpServer.on('message', async (msg, rinfo) => {
   const messageString = msg.toString();
