@@ -13,9 +13,8 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
 const port = process.env.PORT ;
 const udpPort = process.env.UDP_PORT ;
-
 const udpServer = dgram.createSocket('udp4');
-const https = require('https');
+
 
 // MySQL connection configuration
 const dbConnection = mysql.createConnection({
@@ -103,7 +102,11 @@ udpServer.bind(udpPort, () => {
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {   
-  res.sendFile(__dirname + '/index1.html'); 
+  const Ip =process.env.IP_ADDRESS/ Obtener el valor de la variable de entorno
+ 
+
+  // Enviar el archivo HTML como respuesta, pasando la variable de entorno como dato
+  res.sendFile(__dirname + '/index1.html', { Ip });
 });
 
 app.get('/filtrar', (req, res) => {
