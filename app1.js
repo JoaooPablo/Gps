@@ -15,6 +15,7 @@ const port = process.env.PORT ;
 const udpPort = process.env.UDP_PORT ;
 
 const udpServer = dgram.createSocket('udp4');
+const https = require('https');
 https.get('https://api.ipify.org?format=json', (resp) => {
   let data = '';
 
