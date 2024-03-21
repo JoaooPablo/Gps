@@ -125,6 +125,7 @@
     // Listen for updateData event to update map with new data
     socket.on('updateData', (data) => {
       updateMarkerAndMap(data);
+      showUpdatedData(data);
     });
 
     function showInitialData(data) {
@@ -134,6 +135,15 @@
                                  <p>Fecha: ${data.fecha}</p>
                                  <p>Altitud: ${data.altitud}</p>`;
       dataContainer.style.display = 'block';
+    }
+
+    // Añadir función para mostrar datos actualizados
+    function showUpdatedData(data) {
+      const dataContainer = document.getElementById('data-container');
+      dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
+                                 <p>Longitud: ${data.longitud}</p>
+                                 <p>Fecha: ${data.fecha}</p>
+                                 <p>Altitud: ${data.altitud}</p>`;
     }
     
     document.getElementById('apply-button').addEventListener('click', async () => {
@@ -166,7 +176,8 @@
       data.forEach(item => {
         const row = document.createElement('tr');
         ['fecha', 'latitud', 'longitud', 'altitud'].forEach(key => {
-          const cell = document.createElement('td');
+          const cell = document
+                    .createElement('td');
           cell.textContent = item[key];
           row.appendChild(cell);
         });
@@ -186,3 +197,4 @@
   </script>
 </body>
 </html>
+
