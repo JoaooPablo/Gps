@@ -46,12 +46,10 @@ async function getLatestData() {
   });
 }
 
-
 server.on('upgrade', (request, socket, head) => {
-    io.handleUpgrade(request, socket, head, (ws) => {
-      io.emit('connection', ws, request);
-    });
-  });
+  console.log('Handling upgrade...');
+  // Socket.IO maneja la actualización de protocolo WebSocket automáticamente
+});
   
 
 udpServer.on('message', async (msg, rinfo) => {
