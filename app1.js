@@ -102,6 +102,22 @@ udpServer.bind(udpPort, () => {
 
 app.use(bodyParser.json());
 
+https.get('https://api.ipify.org?format=json', (resp) => {
+  let data = '';
+
+  resp.on('data', (chunk) => {
+    data += chunk;
+  });
+
+  resp.on('end', () => {
+    const ipAddress = JSON.parse(data).ip;
+    console.log(`Tu IP pública es: ${ipAddress}`);
+
+    // Se inicia el servidor una vez que se obtiene la IP pública
+    server.listen(port, () => {
+      console.log(`Servidor HTTP escuchando en el puerto ${port}`);
+    });
+    
 app.get('/', (req, res) => {
       res.sendFile(__dirname + '/index1.html', { ipAddress });
     });
