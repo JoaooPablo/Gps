@@ -16,8 +16,7 @@ const udpPort = process.env.UDP_PORT ;
 
 const udpServer = dgram.createSocket('udp4');
 const https = require('https');
-const ejs = require('ejs');
-app.set('view engine', 'ejs');
+
 // MySQL connection configuration
 const dbConnection = mysql.createConnection({
   host: process.env.DB_HOST ,
@@ -102,24 +101,10 @@ udpServer.bind(udpPort, () => {
 });
 
 app.use(bodyParser.json());
-let ipAddress;
-https.get('https://api.ipify.org?format=json', (resp) => {
-  let data = '';
 
-  resp.on('data', (chunk) => {
-    data += chunk;
-  });
-
-  resp.on('end', () => {
-    const ipAddress = JSON.parse(data).ip;
-    console.log(`Tu IP pública es: ${ipAddress}`);
-
-    app.get('/', (req, res) => {
-      res.sendFile(__dirname + '/index1.html', { ipAddress });
-    });
-  });
+app.get('/', (req, res) => {   
+  res.sendFile(__dirname + '/index1.html'); 
 });
-
 
 app.get('/filtrar', (req, res) => {
   const fechaInicio = req.query.inicio;
@@ -135,6 +120,4 @@ app.get('/filtrar', (req, res) => {
   });
 });
 
-server.listen(port, () => {
-      console.log(`Servidor ${ipAddress} escuchando en el puerto ${port}`);
-    });
+server.listen(port);
