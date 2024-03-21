@@ -103,23 +103,9 @@ udpServer.bind(udpPort, () => {
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-  https.get('https://api.ipify.org?format=json', (resp) => {
-    let data = '';
-
-    resp.on('data', (chunk) => {
-      data += chunk;
+      res.sendFile(__dirname + '/index1.html', { ipAddress });
     });
-
-    resp.on('end', () => {
-      const ipAddress = JSON.parse(data).ip;
-      res.render(__dirname + '/index1.html', { ipAddress });
-    });
-  }).on("error", (err) => {
-    console.log("Error: " + err.message);
   });
-});
-
-
 app.get('/filtrar', (req, res) => {
   const fechaInicio = req.query.inicio;
   const fechaFin = req.query.fin;
