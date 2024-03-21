@@ -1,28 +1,26 @@
-
 const express = require('express');
 const http = require('http');
 const dgram = require('dgram');
+const WebSocket = require('ws');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const moment = require('moment');
-const dotenv = require('dotenv');
-const os = require('os');
-const socketio = require('socket.io');
+const dotenv = require('dotenv'); 
 dotenv.config();
-
 const app = express();
 const server = http.createServer(app);
-const io = socketio(server);
+const wss = new WebSocket.Server({ noServer: true });
 
-const port = process.env.PORT;
-const udpPort = process.env.UDP_PORT;
+const port = process.env.PORT ;
+const udpPort = process.env.UDP_PORT ;
+
 const udpServer = dgram.createSocket('udp4');
 
 // MySQL connection configuration
 const dbConnection = mysql.createConnection({
-  host: process.env.DB_HOST,
+  host: process.env.DB_HOST ,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  password: process.env.DB_PASSWORD ,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
 });
@@ -48,7 +46,19 @@ async function getLatestData() {
   });
 }
 
-// Handle incoming UDP messages
+// Handle the upgrade event for WebSocket
+server.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, async (ws) => {
+    // Send the latest data to the new WebSocket client
+    const latestData = await getLatestData();
+    if (latestData) {
+      ws.send(JSON.stringify(latestData));
+    }
+
+    wss.emit('connection', ws, request);
+  });
+});
+
 udpServer.on('message', async (msg, rinfo) => {
   const messageString = msg.toString();
 
@@ -61,20 +71,20 @@ udpServer.on('message', async (msg, rinfo) => {
     const longitud = parseFloat(match[3]);
     const altitud = parseFloat(match[4]);
 
-    io.emit('data', { latitud, longitud, fecha, altitud });
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ latitud, longitud, fecha, altitud }));
+      }
+    });
 
-    console.log('Datos enviados a clientes Socket.IO:', { latitud, longitud, fecha, altitud });
+    console.log('Datos enviados a clientes WebSocket:', { latitud, longitud, fecha, altitud });
 
-    dbConnection.query('INSERT IGNORE INTO coordenadas(fecha, latitud, longitud, altitud) VALUES(?, ?, ?, ?)', [fecha, latitud, longitud, altitud], (error, results) => {
+    dbConnection.query('INSERT INTO coordenadas(fecha, latitud, longitud, altitud) VALUES(?, ?, ?, ?)', [fecha, latitud, longitud, altitud], (error, results) => {
       if (error) {
         console.error('Error al guardar datos en MySQL:', error.message);
         return;
       }
-      if (results.affectedRows === 0) {
-        console.log('Datos duplicados, no se insertaron en MySQL:', { fecha, latitud, longitud, altitud });
-      } else {
-        console.log('Datos guardados en MySQL:', { fecha, latitud, longitud, altitud });
-      }
+      console.log('Datos guardados en MySQL:', { fecha, latitud, longitud, altitud });
     });
   } else {
     console.error('Mensaje UDP no tiene el formato esperado:', msg.toString());
@@ -87,12 +97,10 @@ udpServer.bind(udpPort, () => {
 
 app.use(bodyParser.json());
 
-// Ruta para enviar el archivo HTML
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index1.html');
 });
 
-// Ruta para filtrar datos
 app.get('/filtrar', (req, res) => {
   const fechaInicio = req.query.inicio;
   const fechaFin = req.query.fin;
@@ -107,18 +115,6 @@ app.get('/filtrar', (req, res) => {
   });
 });
 
-// Send latest data to client when connected
-io.on('connection', async (socket) => {
-  console.log('Cliente Socket.IO conectado');
-
-  // Send latest data when connected
-  const latestData = await getLatestData();
-  if (latestData) {
-    socket.emit('initialData', latestData);
-  }
-});
-
-// Start HTTP server
 server.listen(port, () => {
-  console.log(`Servidor HTTP escuchando en el puerto ${port}`);
+  console.log(`Servidor web en http://100.24.161.99:${port}`);
 });
