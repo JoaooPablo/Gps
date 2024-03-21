@@ -1,26 +1,26 @@
 const express = require('express');
 const http = require('http');
 const dgram = require('dgram');
-const WebSocket = require('ws');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const moment = require('moment');
-const dotenv = require('dotenv'); 
-const os = require('os'); // Importar el módulo os
+const dotenv = require('dotenv');
+const os = require('os');
+const socketio = require('socket.io'); // Importar Socket.IO
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ noServer: true });
-const port = process.env.PORT ;
-const udpPort = process.env.UDP_PORT ;
-const udpServer = dgram.createSocket('udp4');
+const io = socketio(server); // Crear una instancia de Socket.IO
 
+const port = process.env.PORT;
+const udpPort = process.env.UDP_PORT;
+const udpServer = dgram.createSocket('udp4');
 
 // MySQL connection configuration
 const dbConnection = mysql.createConnection({
-  host: process.env.DB_HOST ,
+  host: process.env.DB_HOST,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD ,
+  password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
 });
@@ -46,19 +46,7 @@ async function getLatestData() {
   });
 }
 
-// Handle the upgrade event for WebSocket
-server.on('upgrade', (request, socket, head) => {
-  wss.handleUpgrade(request, socket, head, async (ws) => {
-    // Send the latest data to the new WebSocket client
-    const latestData = await getLatestData();
-    if (latestData) {
-      ws.send(JSON.stringify(latestData));
-    }
-
-    wss.emit('connection', ws, request);
-  });
-});
-
+// Handle incoming UDP messages
 udpServer.on('message', async (msg, rinfo) => {
   const messageString = msg.toString();
 
@@ -71,14 +59,12 @@ udpServer.on('message', async (msg, rinfo) => {
     const longitud = parseFloat(match[3]);
     const altitud = parseFloat(match[4]);
 
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ latitud, longitud, fecha, altitud }));
-      }
-    });
+    // Emitir el mensaje a todos los clientes conectados a través de Socket.IO
+    io.emit('data', { latitud, longitud, fecha, altitud });
 
-    console.log('Datos enviados a clientes WebSocket:', { latitud, longitud, fecha, altitud });
+    console.log('Datos enviados a clientes Socket.IO:', { latitud, longitud, fecha, altitud });
 
+    // Insertar los datos en MySQL
     dbConnection.query('INSERT IGNORE INTO coordenadas(fecha, latitud, longitud, altitud) VALUES(?, ?, ?, ?)', [fecha, latitud, longitud, altitud], (error, results) => {
       if (error) {
         console.error('Error al guardar datos en MySQL:', error.message);
@@ -101,9 +87,12 @@ udpServer.bind(udpPort, () => {
 
 app.use(bodyParser.json());
 
-app.get('/', (req, res) => {  
+// Ruta para enviar el archivo HTML
+app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index1.html');
 });
+
+// Ruta para filtrar datos
 app.get('/filtrar', (req, res) => {
   const fechaInicio = req.query.inicio;
   const fechaFin = req.query.fin;
@@ -118,4 +107,20 @@ app.get('/filtrar', (req, res) => {
   });
 });
 
-server.listen(port);
+// Manejar la conexión de Socket.IO
+io.on('connection', (socket) => {
+  console.log('Cliente Socket.IO conectado');
+
+  // Enviar los datos más recientes al cliente que se acaba de conectar
+  socket.on('getLatestData', async () => {
+    const latestData = await getLatestData();
+    if (latestData) {
+      socket.emit('data', latestData);
+    }
+  });
+});
+
+// Iniciar el servidor HTTP
+server.listen(port, () => {
+  console.log(`Servidor HTTP escuchando en el puerto ${port}`);
+});
