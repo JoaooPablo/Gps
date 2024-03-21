@@ -15,9 +15,21 @@ const port = process.env.PORT ;
 const udpPort = process.env.UDP_PORT ;
 
 const udpServer = dgram.createSocket('udp4');
-const networkInterfaces = os.networkInterfaces();
+https.get('https://api.ipify.org?format=json', (resp) => {
+  let data = '';
 
-console.log(networkInterfaces);
+  resp.on('data', (chunk) => {
+    data += chunk;
+  });
+
+  resp.on('end', () => {
+    const ipAddress = JSON.parse(data).ip;
+    console.log(`Tu IP pública es: ${ipAddress}`);
+  });
+
+}).on("error", (err) => {
+  console.log("Error: " + err.message);
+});
 
 // MySQL connection configuration
 const dbConnection = mysql.createConnection({
