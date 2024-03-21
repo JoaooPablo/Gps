@@ -17,6 +17,7 @@
     "http": "0.0.1-security",
     "mongoose": "^8.2.0",
     "pg": "^8.11.3",
+    "socket.io": "^4.7.5",
     "sqlite3": "^5.1.7",
     "sse-express": "^1.0.2",
     "ws": "^8.16.0"
