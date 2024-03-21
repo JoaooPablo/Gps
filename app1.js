@@ -101,7 +101,6 @@ udpServer.bind(udpPort, () => {
 });
 
 app.use(bodyParser.json());
-
 https.get('https://api.ipify.org?format=json', (resp) => {
   let data = '';
 
@@ -117,11 +116,13 @@ https.get('https://api.ipify.org?format=json', (resp) => {
     server.listen(port, () => {
       console.log(`Servidor HTTP escuchando en el puerto ${port}`);
     });
-    
-app.get('/', (req, res) => {
+
+    app.get('/', (req, res) => {
       res.sendFile(__dirname + '/index1.html', { ipAddress });
     });
   });
+});
+
 app.get('/filtrar', (req, res) => {
   const fechaInicio = req.query.inicio;
   const fechaFin = req.query.fin;
