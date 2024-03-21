@@ -137,7 +137,7 @@
       dataContainer.style.display = 'block';
     }
 
-    // Añadir función para mostrar datos actualizados
+    // Add function to show updated data
     function showUpdatedData(data) {
       const dataContainer = document.getElementById('data-container');
       dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
@@ -150,16 +150,16 @@
       const startDate = document.getElementById('start-date-time').value;
       const endDate = document.getElementById('end-date-time').value;
 
-      // Realizar solicitud al servidor para filtrar los datos
+      // Request data from server to filter
       const response = await fetch(`/filtrar?inicio=${startDate}&fin=${endDate}`);
       const data = await response.json();
 
-      // Mostrar los datos filtrados en la página
+      // Show filtered data on the page
       const dataContainer = document.getElementById('filtered-data-container');
       const table = dataContainer.querySelector('table');
       const tbody = document.createElement('tbody');
 
-      // Crea la fila de encabezado de la tabla si no existe
+      // Create table header row if it doesn't exist
       if (!table.querySelector('thead')) {
         const thead = document.createElement('thead');
         const headerRow = document.createElement('tr');
@@ -172,12 +172,14 @@
         table.appendChild(thead);
       }
 
-      // Agrega filas de datos a la tabla
+      // Add data rows to the table
       data.forEach(item => {
         const row = document.createElement('tr');
         ['fecha', 'latitud', 'longitud', 'altitud'].forEach(key => {
-          const cell = document
-                    .createElement('td');
+          const cell = document.createElement('td');
+          cell.textContent = item[key];
+          row.appendChild(cell)
+                    const cell = document.createElement('td');
           cell.textContent = item[key];
           row.appendChild(cell);
         });
@@ -186,12 +188,12 @@
       table.innerHTML = '';
       table.appendChild(tbody);
 
-      // Mostrar el contenedor de datos filtrados
+      // Show filtered data container
       dataContainer.style.display = 'block';
     });
 
     document.getElementById('back-button').addEventListener('click', () => {
-      // Ocultar el contenedor de datos filtrados
+      // Hide filtered data container
       document.getElementById('filtered-data-container').style.display = 'none';
     });
   </script>
