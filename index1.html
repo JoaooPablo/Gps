@@ -116,11 +116,21 @@
       map.panTo([data.latitud, data.longitud]);
     }
 
-    // Listen for data event to update map with new data
-    socket.on('data', (data) => {
+    // Listen for initialData event to update map with initial data
+    socket.on('initialData', (data) => {
       updateMarkerAndMap(data);
+      showInitialData(data);
     });
 
+    function showInitialData(data) {
+      const dataContainer = document.getElementById('data-container');
+      dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
+                                 <p>Longitud: ${data.longitud}</p>
+                                 <p>Fecha: ${data.fecha}</p>
+                                 <p>Altitud: ${data.altitud}</p>`;
+      dataContainer.style.display = 'block';
+    }
+    
     document.getElementById('apply-button').addEventListener('click', async () => {
       const startDate = document.getElementById('start-date-time').value;
       const endDate = document.getElementById('end-date-time').value;
@@ -163,8 +173,10 @@
       // Mostrar el contenedor de datos filtrados
       dataContainer.style.display = 'block';
     });
+
     document.getElementById('back-button').addEventListener('click', () => {
-      // Ocultar el contenedor de datos filtrados
+      // Ocultar el contenedor
+
       document.getElementById('filtered-data-container').style.display = 'none';
     });
   </script>
