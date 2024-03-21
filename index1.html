@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -85,8 +84,10 @@
 
   <!-- Agrega la biblioteca Leaflet -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- Agrega la biblioteca Socket.IO -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
   <script>
-    const socket = new WebSocket( `ws://100.24.161.99:80`);
+    const socket = io(); // Conexión a Socket.IO utilizando la misma IP del servidor
     const map = L.map('map').setView([0, 0], 13); // Mapa inicial centrado en coordenadas [0, 0]
     const movingTruckIcon = L.divIcon({
       className: 'moving-truck-icon',
@@ -121,11 +122,10 @@
       map.panTo([data.latitud, data.longitud]);
     }
 
-    // Escucha eventos de mensajes del socket WebSocket
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+    // Escucha eventos de mensajes del socket Socket.IO
+    socket.on('data', (data) => {
       updateMarkerAndMap(data);
-    };
+    });
 
     document.getElementById('apply-button').addEventListener('click', async () => {
       const startDate = document.getElementById('start-date-time').value;
@@ -169,7 +169,6 @@
       // Mostrar el contenedor de datos filtrados
       dataContainer.style.display = 'block';
     });
-
     document.getElementById('back-button').addEventListener('click', () => {
       // Ocultar el contenedor de datos filtrados
       document.getElementById('filtered-data-container').style.display = 'none';
