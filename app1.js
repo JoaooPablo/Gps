@@ -101,14 +101,9 @@ udpServer.bind(udpPort, () => {
 
 app.use(bodyParser.json());
 
-app.get('/', (req, res) => {   
-  const Ip =process.env.IP_ADDRESS
- 
-
-  // Enviar el archivo HTML como respuesta, pasando la variable de entorno como dato
-  res.sendFile(__dirname + '/index1.html', { Ip });
+app.get('/', (req, res) => {  
+  res.sendFile(__dirname + '/index1.html');
 });
-
 app.get('/filtrar', (req, res) => {
   const fechaInicio = req.query.inicio;
   const fechaFin = req.query.fin;
