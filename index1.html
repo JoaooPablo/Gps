@@ -122,6 +122,11 @@
       showInitialData(data);
     });
 
+    // Listen for updateData event to update map with new data
+    socket.on('updateData', (data) => {
+      updateMarkerAndMap(data);
+    });
+
     function showInitialData(data) {
       const dataContainer = document.getElementById('data-container');
       dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
