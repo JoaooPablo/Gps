@@ -85,44 +85,42 @@
   <!-- Agrega la biblioteca Leaflet -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const socket = io();
-    const map = L.map('map').setView([0, 0], 13); // Mapa inicial centrado en coordenadas [0, 0]
-    const movingTruckIcon = L.divIcon({
-      className: 'moving-truck-icon',
-      html: '<i class="fas fa-truck-moving moving-truck"></i>',
-      iconSize: [60, 60],
-      iconAnchor: [30, 30]
-    });
+    document.addEventListener('DOMContentLoaded', function() {
+      const socket = io();
+      const map = L.map('map').setView([0, 0], 13); // Mapa inicial centrado en coordenadas [0, 0]
+      const movingTruckIcon = L.divIcon({
+        className: 'moving-truck-icon',
+        html: '<i class="fas fa-truck-moving moving-truck"></i>',
+        iconSize: [60, 60],
+        iconAnchor: [30, 30]
+      });
 
-    const marker = L.marker([0, 0], { icon: movingTruckIcon }).addTo(map); // Inicializar un marcador con el ícono del camión
-    const polyline = L.polyline([], { color: 'blue' }).addTo(map); // Inicializar una polilínea para trazar la ruta del vehículo
+      const marker = L.marker([0, 0], { icon: movingTruckIcon }).addTo(map); // Inicializar un marcador con el ícono del camión
+      const polyline = L.polyline([], { color: 'blue' }).addTo(map); // Inicializar una polilínea para trazar la ruta del vehículo
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
 
-    // Función para actualizar el marcador con los nuevos datos
-    function updateMarkerAndMap(data) {
-      const dataContainer = document.getElementById('data-container');
-      dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
-                                 <p>Longitud: ${data.longitud}</p>
-                                 <p>Fecha: ${data.fecha}</p>
-                                 <p>Altitud: ${data.altitud}</p>`;
+      // Función para actualizar el marcador con los nuevos datos
+      function updateMarkerAndMap(data) {
+        const dataContainer = document.getElementById('data-container');
+        dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
+                                   <p>Longitud: ${data.longitud}</p>
+                                   <p>Fecha: ${data.fecha}</p>
+                                   <p>Altitud: ${data.altitud}</p>`;
 
-      // Agregar la nueva ubicación a la polilínea para trazar la ruta
-      polyline.addLatLng([data.latitud, data.longitud]);
+        // Agregar la nueva ubicación a la polilínea para trazar la ruta
+        polyline.addLatLng([data.latitud, data.longitud]);
 
-      // Actualizar el marcador con la última ubicación
-      marker.setLatLng([data.latitud, data.longitud])
-       .bindPopup(`Fecha: ${data.fecha}<br>Altitud: ${data.altitud}`)
+        // Actualizar el marcador con la última ubicación
+        marker.setLatLng([data.latitud, data.longitud])
+         .bindPopup(`Fecha: ${data.fecha}<br>Altitud: ${data.altitud}`)
 
-      // Centrar el mapa en la última ubicación
-      map.panTo([data.latitud, data.longitud]);
-    }
-
-    // Escucha eventos de mensajes del socket WebSocket
-    // Escucha eventos de mensajes del socket Socket.IO
-    socket.on('message', (data) => {
+        // Centrar el mapa en la última ubicación
+        map.panTo([data.latitud, data.longitud]);
+      }
+      socket.on('message', (data) => {
         updateMarkerAndMap(data);
     });
 
@@ -174,6 +172,8 @@
       // Ocultar el contenedor de datos filtrados
       document.getElementById('filtered-data-container').style.display = 'none';
     });
+});
   </script>
 </body>
 </html>
+
