@@ -112,14 +112,12 @@ https.get('https://api.ipify.org?format=json', (resp) => {
     const ipAddress = JSON.parse(data).ip;
     console.log(`Tu IP pública es: ${ipAddress}`);
 
-
-    });
-
     app.get('/', (req, res) => {
       res.sendFile(__dirname + '/index1.html', { ipAddress });
     });
   });
 });
+
 
 app.get('/filtrar', (req, res) => {
   const fechaInicio = req.query.inicio;
