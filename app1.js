@@ -6,6 +6,8 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const moment = require('moment');
 const dotenv = require('dotenv'); 
+const http = require('http');
+const os = require('os'); // Importar el módulo os
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
