@@ -63,7 +63,7 @@
   </div>
     
   <div id="map"></div>
-  <div id="data-container"></div>
+  <div id="filtered-data-container"></div>
   <div class="input-container">
     <div class="date-time-input">
       <label for="start-date-time">Inicio:</label>
@@ -76,125 +76,86 @@
     <button id="apply-button">Apply</button>
     <button id="back-button">Back</button>
   </div>
-  <div id="filtered-data-container" style="display: none;">
-    <table></table>
-  </div>
 
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.2/socket.io.js"></script>
   <script>
-    const socket = io(); 
-    const map = L.map('map').setView([0, 0], 13);
-    const movingTruckIcon = L.divIcon({
-      className: 'moving-truck-icon',
-      html: '<i class="fas fa-truck-moving moving-truck"></i>',
-      iconSize: [60, 60],
-      iconAnchor: [30, 30]
-    });
+    document.addEventListener('DOMContentLoaded', () => {
+      const socket = io();
+      const map = L.map('map').setView([0, 0], 13);
+      const movingTruckIcon = L.divIcon({
+        className: 'moving-truck-icon',
+        html: '<i class="fas fa-truck-moving moving-truck"></i>',
+        iconSize: [60, 60],
+        iconAnchor: [30, 30]
+      });
+      const marker = L.marker([0, 0], { icon: movingTruckIcon }).addTo(map);
+      const polyline = L.polyline([], { color: 'blue' }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
 
-    const marker = L.marker([0, 0], { icon: movingTruckIcon }).addTo(map);
-    const polyline = L.polyline([], { color: 'blue' }).addTo(map);
+      function updateMarkerAndMap(data) {
+        const dataContainer = document.getElementById('filtered-data-container');
+        dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
+                                   <p>Longitud: ${data.longitud}</p>
+                                   <p>Fecha: ${data.fecha}</p>
+                                   <p>Altitud: ${data.altitud}</p>`;
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+        polyline.addLatLng([data.latitud, data.longitud]);
 
-    // Function to update marker and map
-    function updateMarkerAndMap(data) {
-      const dataContainer = document.getElementById('data-container');
-      dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
-                                 <p>Longitud: ${data.longitud}</p>
-                                 <p>Fecha: ${data.fecha}</p>
-                                 <p>Altitud: ${data.altitud}</p>`;
+        marker.setLatLng([data.latitud, data.longitud])
+          .bindPopup(`Fecha: ${data.fecha}<br>Altitud: ${data.altitud}`)
+          .openPopup();
 
-      polyline.addLatLng([data.latitud, data.longitud]);
-
-      marker.setLatLng([data.latitud, data.longitud])
-       .bindPopup(`Fecha: ${data.fecha}<br>Altitud: ${data.altitud}`)
-       .openPopup();
-
-      map.panTo([data.latitud, data.longitud]);
-    }
-
-    // Listen for initialData event to update map with initial data
-    socket.on('initialData', (data) => {
-      updateMarkerAndMap(data);
-      showInitialData(data);
-    });
-
-    // Listen for updateData event to update map with new data
-    socket.on('updateData', (data) => {
-      updateMarkerAndMap(data);
-      showUpdatedData(data);
-    });
-
-    function showInitialData(data) {
-      const dataContainer = document.getElementById('data-container');
-      dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
-                                 <p>Longitud: ${data.longitud}</p>
-                                 <p>Fecha: ${data.fecha}</p>
-                                 <p>Altitud: ${data.altitud}</p>`;
-      dataContainer.style.display = 'block';
-    }
-
-    // Add function to show updated data
-    function showUpdatedData(data) {
-      const dataContainer = document.getElementById('data-container');
-      dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
-                                 <p>Longitud: ${data.longitud}</p>
-                                 <p>Fecha: ${data.fecha}</p>
-                                 <p>Altitud: ${data.altitud}</p>`;
-    }
-    
-    document.getElementById('apply-button').addEventListener('click', async () => {
-      const startDate = document.getElementById('start-date-time').value;
-      const endDate = document.getElementById('end-date-time').value;
-
-      // Request data from server to filter
-      const response = await fetch(`/filtrar?inicio=${startDate}&fin=${endDate}`);
-      const data = await response.json();
-
-      // Show filtered data on the page
-      const dataContainer = document.getElementById('filtered-data-container');
-      const table = dataContainer.querySelector('table');
-      const tbody = document.createElement('tbody');
-
-      // Create table header row if it doesn't exist
-      if (!table.querySelector('thead')) {
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        ['Fecha', 'Latitud', 'Longitud', 'Altitud'].forEach(text => {
-          const th = document.createElement('th');
-          th.textContent = text;
-          headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
+        map.panTo([data.latitud, data.longitud]);
       }
 
-      // Add data rows to the table
-      data.forEach(item => {
-        const row = document.createElement('tr');
-        ['fecha', 'latitud', 'longitud', 'altitud'].forEach(key => {
-          const cell = document.createElement('td');
-          cell.textContent = item[key];
-          row.appendChild(cell)
-                    const cell = document.createElement('td');
-          cell.textContent = item[key];
-          row.appendChild(cell);
+      document.getElementById('apply-button').addEventListener('click', async () => {
+        const startDate = document.getElementById('start-date-time').value;
+        const endDate = document.getElementById('end-date-time').value;
+
+        const response = await fetch(`/filtrar?inicio=${startDate}&fin=${endDate}`);
+        const data = await response.json();
+
+        const dataContainer = document.getElementById('filtered-data-container');
+        const table = document.createElement('table');
+        const tbody = document.createElement('tbody');
+
+        if (!table.querySelector('thead')) {
+          const thead = document.createElement('thead');
+          const headerRow = document.createElement('tr');
+          ['Fecha', 'Latitud', 'Longitud', 'Altitud'].forEach(text => {
+            const th = document.createElement('th');
+            th.textContent = text;
+            headerRow.appendChild(th);
+          });
+          thead.appendChild(headerRow);
+          table.appendChild(thead);
+        }
+
+        data.forEach(item => {
+          const row = document.createElement('tr');
+          ['fecha', 'latitud', 'longitud', 'altitud'].forEach(key => {
+            const cell = document.createElement('td');
+            cell.textContent = item[key];
+            row.appendChild(cell);
+          });
+          tbody.appendChild(row);
         });
-        tbody.appendChild(row);
+        table.appendChild(tbody);
+        dataContainer.innerHTML = '';
+        dataContainer.appendChild(table);
       });
-      table.innerHTML = '';
-      table.appendChild(tbody);
 
-      // Show filtered data container
-      dataContainer.style.display = 'block';
-    });
+      document.getElementById('back-button').addEventListener('click', () => {
+        document.getElementById('filtered-data-container').innerHTML = '';
+      });
 
-    document.getElementById('back-button').addEventListener('click', () => {
-      // Hide filtered data container
-      document.getElementById('filtered-data-container').style.display = 'none';
+      socket.on('updateData', function(data) {
+        console.log('Datos recibidos del servidor:', data);
+        updateMarkerAndMap(data);
+      });
     });
   </script>
 </body>
