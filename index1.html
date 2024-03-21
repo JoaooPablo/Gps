@@ -116,20 +116,12 @@
       map.panTo([data.latitud, data.longitud]);
     }
 
-    // Listen for initialData event to update map with initial data
-    socket.on('initialData', (data) => {
+    // Listen for data event to update map with new data
+    socket.on('data', (data) => {
+      const data = JSON.parse(event.data);  
       updateMarkerAndMap(data);
-      showInitialData(data);
     });
 
-    function showInitialData(data) {
-      const dataContainer = document.getElementById('data-container');
-      dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
-                                 <p>Longitud: ${data.longitud}</p>
-                                 <p>Fecha: ${data.fecha}</p>
-                                 <p>Altitud: ${data.altitud}</p>`;
-      dataContainer.style.display = 'block';
-    }
     document.getElementById('apply-button').addEventListener('click', async () => {
       const startDate = document.getElementById('start-date-time').value;
       const endDate = document.getElementById('end-date-time').value;
@@ -176,8 +168,6 @@
       // Ocultar el contenedor de datos filtrados
       document.getElementById('filtered-data-container').style.display = 'none';
     });
-    // Rest of the code...
   </script>
 </body>
 </html>
-
