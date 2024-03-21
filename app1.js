@@ -112,9 +112,7 @@ https.get('https://api.ipify.org?format=json', (resp) => {
     const ipAddress = JSON.parse(data).ip;
     console.log(`Tu IP pública es: ${ipAddress}`);
 
-    // Se inicia el servidor una vez que se obtiene la IP pública
-    server.listen(port, () => {
-      console.log(`Servidor HTTP escuchando en el puerto ${port}`);
+
     });
 
     app.get('/', (req, res) => {
@@ -137,4 +135,6 @@ app.get('/filtrar', (req, res) => {
   });
 });
 
-server.listen(port)
+server.listen(port, () => {
+      console.log(`Servidor ${ipAddress} escuchando en el puerto ${port}`);
+    });
