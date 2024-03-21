@@ -102,7 +102,7 @@ udpServer.bind(udpPort, () => {
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {   
-  const Ip =process.env.IP_ADDRESS/ Obtener el valor de la variable de entorno
+  const Ip =process.env.IP_ADDRESS
  
 
   // Enviar el archivo HTML como respuesta, pasando la variable de entorno como dato
