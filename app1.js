@@ -16,7 +16,8 @@ const udpPort = process.env.UDP_PORT ;
 
 const udpServer = dgram.createSocket('udp4');
 const https = require('https');
-
+const ejs = require('ejs');
+app.set('view engine', 'ejs');
 // MySQL connection configuration
 const dbConnection = mysql.createConnection({
   host: process.env.DB_HOST ,
