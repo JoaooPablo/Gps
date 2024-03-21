@@ -86,8 +86,9 @@
   <!-- Agrega la biblioteca Leaflet -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const ipAddress = "<%= ipAddress %>"
-    const socket = new WebSocket(`ws://100.24.161.99:80`);
+    const Ip = '<%= Ip %>';
+    const url = `ws://${miVariable}:80`;
+    const socket = new WebSocket(url);
     const map = L.map('map').setView([0, 0], 13); // Mapa inicial centrado en coordenadas [0, 0]
     const movingTruckIcon = L.divIcon({
       className: 'moving-truck-icon',
