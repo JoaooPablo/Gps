@@ -1,7 +1,7 @@
 const express = require('express');
 const http = require('http');
 const dgram = require('dgram');
-const WebSocket = require('ws');
+const socketIO = require('socket.io');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const moment = require('moment');
@@ -9,7 +9,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const app = express();
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ noServer: true });
+const io = socketIO(server);
 
 const port = process.env.PORT ;
 const udpPort = process.env.UDP_PORT ;
@@ -46,16 +46,16 @@ async function getLatestData() {
   });
 }
 
-// Handle the upgrade event for WebSocket
+
 server.on('upgrade', (request, socket, head) => {
-  wss.handleUpgrade(request, socket, head, async (ws) => {
-    // Send the latest data to the new WebSocket client
+  io.handleUpgrade(request, socket, head, async (ws) => {
+
     const latestData = await getLatestData();
     if (latestData) {
-      ws.send(JSON.stringify(latestData));
+      io.send(JSON.stringify(latestData));
     }
 
-    wss.emit('connection', ws, request);
+    io.emit('connection', ws, request);
   });
 });
 
@@ -71,11 +71,15 @@ udpServer.on('message', async (msg, rinfo) => {
     const longitud = parseFloat(match[3]);
     const altitud = parseFloat(match[4]);
 
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ latitud, longitud, fecha, altitud }));
-      }
-    });
+    io.clients((error, clients) => {
+        if (error) throw error;
+        
+        clients.forEach(client => {
+          if (io.sockets.connected[client]) {
+            io.sockets.connected[client].send(JSON.stringify({ latitud, longitud, fecha, altitud }));
+          }
+        });
+      });
 
     console.log('Datos enviados a clientes WebSocket:', { latitud, longitud, fecha, altitud });
 
