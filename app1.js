@@ -118,6 +118,7 @@ udpServer.bind(udpPort, () => {
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
+  const ipAddress = "Tu IP pública aquí"
   res.sendFile(__dirname + '/index1.html');
 });
 
