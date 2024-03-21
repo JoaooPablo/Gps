@@ -1,3 +1,4 @@
+
 const express = require('express');
 const http = require('http');
 const dgram = require('dgram');
@@ -6,11 +7,12 @@ const mysql = require('mysql');
 const moment = require('moment');
 const dotenv = require('dotenv');
 const os = require('os');
-const socketio = require('socket.io'); // Importar Socket.IO
+const socketio = require('socket.io');
 dotenv.config();
+
 const app = express();
 const server = http.createServer(app);
-const io = socketio(server); // Crear una instancia de Socket.IO
+const io = socketio(server);
 
 const port = process.env.PORT;
 const udpPort = process.env.UDP_PORT;
@@ -59,12 +61,10 @@ udpServer.on('message', async (msg, rinfo) => {
     const longitud = parseFloat(match[3]);
     const altitud = parseFloat(match[4]);
 
-    // Emitir el mensaje a todos los clientes conectados a través de Socket.IO
     io.emit('data', { latitud, longitud, fecha, altitud });
 
     console.log('Datos enviados a clientes Socket.IO:', { latitud, longitud, fecha, altitud });
 
-    // Insertar los datos en MySQL
     dbConnection.query('INSERT IGNORE INTO coordenadas(fecha, latitud, longitud, altitud) VALUES(?, ?, ?, ?)', [fecha, latitud, longitud, altitud], (error, results) => {
       if (error) {
         console.error('Error al guardar datos en MySQL:', error.message);
@@ -107,20 +107,18 @@ app.get('/filtrar', (req, res) => {
   });
 });
 
-// Manejar la conexión de Socket.IO
-io.on('connection', (socket) => {
+// Send latest data to client when connected
+io.on('connection', async (socket) => {
   console.log('Cliente Socket.IO conectado');
 
-  // Enviar los datos más recientes al cliente que se acaba de conectar
-  socket.on('getLatestData', async () => {
-    const latestData = await getLatestData();
-    if (latestData) {
-      socket.emit('data', latestData);
-    }
-  });
+  // Send latest data when connected
+  const latestData = await getLatestData();
+  if (latestData) {
+    socket.emit('initialData', latestData);
+  }
 });
 
-// Iniciar el servidor HTTP
+// Start HTTP server
 server.listen(port, () => {
   console.log(`Servidor HTTP escuchando en el puerto ${port}`);
 });
