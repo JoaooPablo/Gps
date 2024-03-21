@@ -86,103 +86,94 @@
   <!-- Agrega la biblioteca Leaflet -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", async function() {
-      const response = await fetch("/getIPAddress");
-      const data = await response.json(); // Obtener los datos de la respuesta, que debería contener la dirección IP
-      const ipAddress = data.ipAddress; // Extraer la dirección IP de los datos
+    const socket = new WebSocket(`ws://100.24.161.99:80`);
+    const map = L.map('map').setView([0, 0], 13); // Mapa inicial centrado en coordenadas [0, 0]
+    const movingTruckIcon = L.divIcon({
+      className: 'moving-truck-icon',
+      html: '<i class="fas fa-truck-moving moving-truck"></i>',
+      iconSize: [60, 60],
+      iconAnchor: [30, 30]
+    });
 
-        // Mostrar la dirección IP en la consola
-      console.log(`Dirección IP del servidor: ${ipAddress}`);
+    const marker = L.marker([0, 0], { icon: movingTruckIcon }).addTo(map); // Inicializar un marcador con el ícono del camión
+    const polyline = L.polyline([], { color: 'blue' }).addTo(map); // Inicializar una polilínea para trazar la ruta del vehículo
 
-        // Crear el WebSocket con la dirección IP obtenida
-      const socket = new WebSocket(`ws://${ipAddress}:80`);
-      const map = L.map('map').setView([0, 0], 13); // Mapa inicial centrado en coordenadas [0, 0]
-      const movingTruckIcon = L.divIcon({
-        className: 'moving-truck-icon',
-        html: '<i class="fas fa-truck-moving moving-truck"></i>',
-        iconSize: [60, 60],
-        iconAnchor: [30, 30]
-      });
-
-      const marker = L.marker([0, 0], { icon: movingTruckIcon }).addTo(map); // Inicializar un marcador con el ícono del camión
-      const polyline = L.polyline([], { color: 'blue' }).addTo(map); // Inicializar una polilínea para trazar la ruta del vehículo
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
-      }).addTo(map);
+    }).addTo(map);
 
     // Función para actualizar el marcador con los nuevos datos
-      function updateMarkerAndMap(data) {
-        const dataContainer = document.getElementById('data-container');
-        dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
+    function updateMarkerAndMap(data) {
+      const dataContainer = document.getElementById('data-container');
+      dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
                                  <p>Longitud: ${data.longitud}</p>
                                  <p>Fecha: ${data.fecha}</p>
                                  <p>Altitud: ${data.altitud}</p>`;
 
       // Agregar la nueva ubicación a la polilínea para trazar la ruta
-        polyline.addLatLng([data.latitud, data.longitud]);
+      polyline.addLatLng([data.latitud, data.longitud]);
 
       // Actualizar el marcador con la última ubicación
-        marker.setLatLng([data.latitud, data.longitud])
-         .bindPopup(`Fecha: ${data.fecha}<br>Altitud: ${data.altitud}`)
+      marker.setLatLng([data.latitud, data.longitud])
+       .bindPopup(`Fecha: ${data.fecha}<br>Altitud: ${data.altitud}`)
 
       // Centrar el mapa en la última ubicación
-        map.panTo([data.latitud, data.longitud]);
-      }
+      map.panTo([data.latitud, data.longitud]);
+    }
 
     // Escucha eventos de mensajes del socket WebSocket
-      socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        updateMarkerAndMap(data);
-      };
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      updateMarkerAndMap(data);
+    };
 
-      document.getElementById('apply-button').addEventListener('click', async () => {
-        const startDate = document.getElementById('start-date-time').value;
-        const endDate = document.getElementById('end-date-time').value;
+    document.getElementById('apply-button').addEventListener('click', async () => {
+      const startDate = document.getElementById('start-date-time').value;
+      const endDate = document.getElementById('end-date-time').value;
 
       // Realizar solicitud al servidor para filtrar los datos
-        const response = await fetch(`/filtrar?inicio=${startDate}&fin=${endDate}`);
-        const data = await response.json();
+      const response = await fetch(`/filtrar?inicio=${startDate}&fin=${endDate}`);
+      const data = await response.json();
 
       // Mostrar los datos filtrados en la página
-        const dataContainer = document.getElementById('filtered-data-container');
-        const table = dataContainer.querySelector('table');
-        const tbody = document.createElement('tbody');
+      const dataContainer = document.getElementById('filtered-data-container');
+      const table = dataContainer.querySelector('table');
+      const tbody = document.createElement('tbody');
 
       // Crea la fila de encabezado de la tabla si no existe
-        if (!table.querySelector('thead')) {
-          const thead = document.createElement('thead');
-          const headerRow = document.createElement('tr');
-          ['Fecha', 'Latitud', 'Longitud', 'Altitud'].forEach(text => {
-            const th = document.createElement('th');
-            th.textContent = text;
-            headerRow.appendChild(th);
-          });
-          thead.appendChild(headerRow);
-          table.appendChild(thead);
-        }
+      if (!table.querySelector('thead')) {
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        ['Fecha', 'Latitud', 'Longitud', 'Altitud'].forEach(text => {
+          const th = document.createElement('th');
+          th.textContent = text;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+      }
 
       // Agrega filas de datos a la tabla
-        data.forEach(item => {
-          const row = document.createElement('tr');
-          ['fecha', 'latitud', 'longitud', 'altitud'].forEach(key => {
-            const cell = document.createElement('td');
-            cell.textContent = item[key];
-            row.appendChild(cell);
-          });
-          tbody.appendChild(row);
+      data.forEach(item => {
+        const row = document.createElement('tr');
+        ['fecha', 'latitud', 'longitud', 'altitud'].forEach(key => {
+          const cell = document.createElement('td');
+          cell.textContent = item[key];
+          row.appendChild(cell);
         });
-        table.innerHTML = '';
-        table.appendChild(tbody);
+        tbody.appendChild(row);
+      });
+      table.innerHTML = '';
+      table.appendChild(tbody);
 
       // Mostrar el contenedor de datos filtrados
-        dataContainer.style.display = 'block';
-      });
+      dataContainer.style.display = 'block';
+    });
 
-      document.getElementById('back-button').addEventListener('click', () => {
+    document.getElementById('back-button').addEventListener('click', () => {
       // Ocultar el contenedor de datos filtrados
-        document.getElementById('filtered-data-container').style.display = 'none';
-      });
+      document.getElementById('filtered-data-container').style.display = 'none';
+    });
   </script>
 </body>
 </html>
