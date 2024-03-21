@@ -14,7 +14,9 @@ const port = process.env.PORT ;
 const udpPort = process.env.UDP_PORT ;
 
 const udpServer = dgram.createSocket('udp4');
-
+const networkInterfaces = os.networkInterfaces();
+const ipAddress = networkInterfaces['en0'][0].address;
+console.log(`Servidor escuchando en http://${ipAddress}:80`)
 // MySQL connection configuration
 const dbConnection = mysql.createConnection({
   host: process.env.DB_HOST ,
