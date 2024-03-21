@@ -16,14 +16,8 @@ const udpPort = process.env.UDP_PORT ;
 
 const udpServer = dgram.createSocket('udp4');
 const networkInterfaces = os.networkInterfaces();
-const networkInterface = networkInterfaces['en0'];
 
-if (networkInterface && networkInterface[0]) {
-    const ipAddress = networkInterface[0].address;
-    console.log(`Servidor escuchando en http://${ipAddress}:3000`);
-} else {
-    console.log("No se pudo obtener la dirección IP de la interfaz de red 'en0'");
-}
+console.log(networkInterfaces);
 
 // MySQL connection configuration
 const dbConnection = mysql.createConnection({
