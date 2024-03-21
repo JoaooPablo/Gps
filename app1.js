@@ -101,6 +101,7 @@ udpServer.bind(udpPort, () => {
 });
 
 app.use(bodyParser.json());
+let ipAddress;
 https.get('https://api.ipify.org?format=json', (resp) => {
   let data = '';
 
