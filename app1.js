@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ noServer: true });
-
+const path = require('path');
 const port = process.env.PORT ;
 const udpPort = process.env.UDP_PORT ;
 
@@ -101,11 +101,14 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index1.html');
 });
 
+app.get('/Historicos', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Historicos.html'));
+});
 app.get('/filtrar', (req, res) => {
   const fechaInicio = req.query.inicio;
   const fechaFin = req.query.fin;
 
-  dbConnection.query('SELECT * FROM coordenadas WHERE fecha BETWEEN ? AND ? ORDER BY fecha DESC', [fechaInicio, fechaFin], (error, results) => {
+  dbConnection.query('SELECT * FROM coordenadas WHERE fecha BETWEEN ? AND ? ORDER BY fecha ASC', [fechaInicio, fechaFin], (error, results) => {
     if (error) {
       console.error('Error al filtrar datos:', error);
       res.status(500).json({ error: 'Error al filtrar datos' });

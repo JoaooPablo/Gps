@@ -64,20 +64,9 @@
   </div>
     
   <!-- Contenedor del mapa Leaflet -->
+  <button id="Historicos">Historicos</button>
   <div id="map"></div>
   <div id="data-container"></div>
-  <div class="input-container">
-    <div class="date-time-input">
-      <label for="start-date-time">Inicio:</label>
-      <input type="datetime-local" id="start-date-time">
-    </div>
-    <div class="date-time-input">
-      <label for="end-date-time">Fin:</label>
-      <input type="datetime-local" id="end-date-time">
-    </div>
-    <button id="apply-button">Apply</button>
-    <button id="back-button">Back</button>
-  </div>
   <div id="filtered-data-container" style="display: none;">
     <table></table>
   </div>
@@ -126,52 +115,10 @@
       updateMarkerAndMap(data);
     };
 
-    document.getElementById('apply-button').addEventListener('click', async () => {
-      const startDate = document.getElementById('start-date-time').value;
-      const endDate = document.getElementById('end-date-time').value;
-
-      // Realizar solicitud al servidor para filtrar los datos
-      const response = await fetch(`/filtrar?inicio=${startDate}&fin=${endDate}`);
-      const data = await response.json();
-
-      // Mostrar los datos filtrados en la página
-      const dataContainer = document.getElementById('filtered-data-container');
-      const table = dataContainer.querySelector('table');
-      const tbody = document.createElement('tbody');
-
-      // Crea la fila de encabezado de la tabla si no existe
-      if (!table.querySelector('thead')) {
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        ['Fecha', 'Latitud', 'Longitud', 'Altitud'].forEach(text => {
-          const th = document.createElement('th');
-          th.textContent = text;
-          headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
-      }
 
       // Agrega filas de datos a la tabla
-      data.forEach(item => {
-        const row = document.createElement('tr');
-        ['fecha', 'latitud', 'longitud', 'altitud'].forEach(key => {
-          const cell = document.createElement('td');
-          cell.textContent = item[key];
-          row.appendChild(cell);
-        });
-        tbody.appendChild(row);
-      });
-      table.innerHTML = '';
-      table.appendChild(tbody);
-
-      // Mostrar el contenedor de datos filtrados
-      dataContainer.style.display = 'block';
-    });
-
-    document.getElementById('back-button').addEventListener('click', () => {
-      // Ocultar el contenedor de datos filtrados
-      document.getElementById('filtered-data-container').style.display = 'none';
+    document.getElementById('Historicos').addEventListener('click', () => {
+      window.location.href = '/Historicos';
     });
   </script>
 </body>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial</title>
+    <style>
+        .input-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .date-time-input {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        #filtered-data-container {
+            margin-top: 20px;
+        }
+
+        #map {
+            height: 500px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="Title" style="text-align: center;">
+    <h1>Consulta Del Historial</h1>
+</div>
+<div id="map"></div>
+<div id="data-container"></div>
+<div class="input-container">
+    <div class="date-time-input">
+        <label for="start-date-time">Inicio:</label>
+        <input type="datetime-local" id="start-date-time">
+    </div>
+    <div class="date-time-input">
+        <label for="end-date-time">Fin:</label>
+        <input type="datetime-local" id="end-date-time">
+    </div>
+    <button id="filter-button">Filter</button>
+</div>
+<div id="filtered-data-container" style="display: none;">
+    <p>No se encontraron datos para el período seleccionado.</p>
+</div>
+
+<!-- Include Leaflet library -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    var map = L.map('map').setView([10.9685, -74.7813], 13);
+    var polyline;
+    var marker;
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+        maxZoom: 18,
+    }).addTo(map);
+
+    document.getElementById('filter-button').addEventListener('click', async function() {
+        const startDate = document.getElementById('start-date-time').value;
+        const endDate = document.getElementById('end-date-time').value;
+
+        const response = await fetch(`/filtrar?inicio=${startDate}&fin=${endDate}`);
+        const data = await response.json();
+
+        if (data.length > 0) {
+            const latLngs = data.map(item => [parseFloat(item.latitud), parseFloat(item.longitud)]);
+            if (latLngs.length > 0) {
+                if (polyline) {
+                    map.removeLayer(polyline);
+                }
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                polyline = L.polyline(latLngs, {color: 'red'}).addTo(map);
+    
+                // Adjust map view to contain the polyline
+                map.fitBounds(polyline.getBounds());
+    
+                // Add marker at the last value of the filtered data
+                const lastIndex = data.length - 1;
+                const lastLatLng = [parseFloat(data[lastIndex].latitud), parseFloat(data[lastIndex].longitud)];
+                marker = L.marker(lastLatLng).addTo(map);
+    
+                document.getElementById('filtered-data-container').style.display = 'none';
+            }
+        } else {
+            alert('No se encontraron datos para el período seleccionado.');
+            // Remove polyline from the map if there is no data
+            if (polyline) {
+                map.removeLayer(polyline);
+            }
+            // Remove marker if there is no data
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            // Show message that no data was found
+            document.getElementById('filtered-data-container').style.display = 'block';
+        }
+    });
+</script>
+</body>
+</html>
