@@ -1,64 +1,34 @@
 const express = require('express');
-const http = require('http');
-const dgram = require('dgram');
-const WebSocket = require('ws');
-const bodyParser = require('body-parser');
-const mysql = require('mysql');
-const moment = require('moment');
-const dotenv = require('dotenv'); 
-dotenv.config();
 const app = express();
-const server = http.createServer(app);
-const wss = new WebSocket.Server({ noServer: true });
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+const dgram = require('dgram');
+const moment = require('moment');
+const mysql = require('mysql');
 const path = require('path');
-const port = process.env.PORT ;
-const udpPort = process.env.UDP_PORT ;
+require('dotenv').config();
 
-const udpServer = dgram.createSocket('udp4');
-
-// MySQL connection configuration
+// Crear una conexión a la base de datos MySQL
 const dbConnection = mysql.createConnection({
-  host: process.env.DB_HOST ,
+  host: process.env.DB_HOST,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD ,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE
 });
 
+// Conectar a la base de datos
 dbConnection.connect((err) => {
   if (err) {
-    console.error('Error connecting to MySQL database:', err.message);
+    console.error('Error al conectar a la base de datos:', err);
     return;
   }
-  console.log('Connected to MySQL database');
+  console.log('Conexión exitosa a la base de datos MySQL');
 });
 
-// Function to get the latest data from MySQL
-async function getLatestData() {
-  return new Promise((resolve, reject) => {
-    dbConnection.query('SELECT fecha, latitud, longitud, altitud FROM coordenadas ORDER BY fecha DESC LIMIT 1', (error, results) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      resolve(results[0]);
-    });
-  });
-}
+// Crear un servidor UDP
+const udpServer = dgram.createSocket('udp4');
 
-// Handle the upgrade event for WebSocket
-server.on('upgrade', (request, socket, head) => {
-  wss.handleUpgrade(request, socket, head, async (ws) => {
-    // Send the latest data to the new WebSocket client
-    const latestData = await getLatestData();
-    if (latestData) {
-      ws.send(JSON.stringify(latestData));
-    }
-
-    wss.emit('connection', ws, request);
-  });
-});
-
+// Escuchar mensajes UDP en el puerto 7002
 udpServer.on('message', async (msg, rinfo) => {
   const messageString = msg.toString();
 
@@ -71,39 +41,46 @@ udpServer.on('message', async (msg, rinfo) => {
     const longitud = parseFloat(match[3]);
     const altitud = parseFloat(match[4]);
 
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify({ latitud, longitud, fecha, altitud }));
-      }
-    });
+    // Emitir los datos al cliente a través de Socket.IO
+    io.emit('coordenadas', { fecha, latitud, longitud, altitud });
 
-    console.log('Datos enviados a clientes WebSocket:', { latitud, longitud, fecha, altitud });
+    // Insertar datos en la tabla coordenadas de MySQL
+    const sql = 'INSERT INTO coordenadas (fecha, latitud, longitud, altitud) VALUES (?, ?, ?, ?)';
+    const values = [fecha, latitud, longitud, altitud];
 
-    dbConnection.query('INSERT INTO coordenadas(fecha, latitud, longitud, altitud) VALUES(?, ?, ?, ?)', [fecha, latitud, longitud, altitud], (error, results) => {
-      if (error) {
-        console.error('Error al guardar datos en MySQL:', error.message);
+    dbConnection.query(sql, values, (err, result) => {
+      if (err) {
+        console.error('Error al insertar datos en la base de datos:', err);
         return;
       }
-      console.log('Datos guardados en MySQL:', { fecha, latitud, longitud, altitud });
+      console.log('Datos insertados correctamente en la tabla coordenadas');
     });
-  } else {
-    console.error('Mensaje UDP no tiene el formato esperado:', msg.toString());
   }
 });
 
-udpServer.bind(udpPort, () => {
-  console.log(`Servidor UDP escuchando en el puerto ${udpPort}`);
+// Iniciar el servidor UDP en el puerto 7002
+udpServer.bind(7002);
+
+// Ruta para obtener la última coordenada
+app.get('/last-coordinate', (req, res) => {
+    const sql = 'SELECT * FROM coordenadas ORDER BY fecha DESC LIMIT 1';
+    dbConnection.query(sql, (err, result) => {
+        if (err) {
+            console.error('Error al obtener la última coordenada desde la base de datos:', err);
+            res.status(500).json({ error: 'Error al obtener la última coordenada' });
+            return;
+        }
+        if (result.length > 0) {
+            res.json({ lastCoordinate: result[0] });
+        } else {
+            res.json({ lastCoordinate: null });
+        }
+    });
 });
-
-app.use(bodyParser.json());
-
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index1.html');
-});
-
 app.get('/Historicos', (req, res) => {
   res.sendFile(path.join(__dirname, 'Historicos.html'));
 });
+
 app.get('/filtrar', (req, res) => {
   const fechaInicio = req.query.inicio;
   const fechaFin = req.query.fin;
@@ -118,6 +95,15 @@ app.get('/filtrar', (req, res) => {
   });
 });
 
-server.listen(port, () => {
-  console.log(`Servidor web en http://100.24.161.99:${port}`);
+// Ruta para el cliente web
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index1.html');
 });
+
+// Configurar Socket.IO
+io.on('connection', (socket) => {
+    console.log('Un cliente se ha conectado');
+});
+
+// Iniciar el servidor HTTP en el puerto 3000
+http.listen(80);
