@@ -1,125 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Web server</title>
-  <!-- Agrega los estilos de Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <style>
-    #map {
-      height: 410px;
-    }
-
-    .moving-truck {
-      color: black; /* Cambia el color según tus preferencias */
-    }
-
-    .Title {
-      text-align: center;
-    }
-
-    .moving-truck-icon {
-      text-align: center;
-    }
-
-    .input-container {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .date-time-input {
-      display: inline-block;
-      margin-right: 10px;
-    }
-
-    #filtered-data-container {
-      margin-top: 20px;
-    }
-
-    #filtered-data-container table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    #filtered-data-container th,
-    #filtered-data-container td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-
-    #filtered-data-container th {
-      background-color: #f2f2f2;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Server</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 400px; }
+        #title { text-align: center; }
+    </style>
 </head>
 <body>
-  <div class="Title">
-    <h1>WEB SERVER</h1>
-    <div class="moving-truck-icon">
-      <i class="fas fa-truck-moving moving-truck"></i>
+    <h1 id="title">Web Server</h1>
+    <div id="map"></div>
+    <div id="data-container">
+        <!-- Aquí se mostrarán las coordenadas -->
     </div>
-  </div>
-    
-  <!-- Contenedor del mapa Leaflet -->
-  <button id="Historicos">Historicos</button>
-  <div id="map"></div>
-  <div id="data-container"></div>
-  <div id="filtered-data-container" style="display: none;">
-    <table></table>
-  </div>
+    <button onclick="window.location.href='/Historicos'">Históricos</button>
 
-  <!-- Agrega la biblioteca Leaflet -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
-    const socket = new WebSocket( `ws://100.24.161.99:80`);
-    const map = L.map('map').setView([0, 0], 13); // Mapa inicial centrado en coordenadas [0, 0]
-    const movingTruckIcon = L.divIcon({
-      className: 'moving-truck-icon',
-      html: '<i class="fas fa-truck-moving moving-truck"></i>',
-      iconSize: [60, 60],
-      iconAnchor: [30, 30]
-    });
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var socket = io();
+        var marker;
+        var map = L.map('map').setView([0, 0], 3);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
-    const marker = L.marker([0, 0], { icon: movingTruckIcon }).addTo(map); // Inicializar un marcador con el ícono del camión
-    const polyline = L.polyline([], { color: 'blue' }).addTo(map); // Inicializar una polilínea para trazar la ruta del vehículo
+        var coordinates = []; // Arreglo para almacenar las coordenadas
+        var polyline; // Variable para la polilínea
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+        // Función para colocar un marcador en el mapa
+        function placeMarker(latitude, longitude) {
+            // Agregar la coordenada al arreglo
+            coordinates.push([latitude, longitude]);
 
-    // Función para actualizar el marcador con los nuevos datos
-    function updateMarkerAndMap(data) {
-      const dataContainer = document.getElementById('data-container');
-      dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
-                                 <p>Longitud: ${data.longitud}</p>
-                                 <p>Fecha: ${data.fecha}</p>
-                                 <p>Altitud: ${data.altitud}</p>`;
+            // Eliminar el marcador anterior, si existe
+            if (marker) {
+                map.removeLayer(marker);
+            }
 
-      // Agregar la nueva ubicación a la polilínea para trazar la ruta
-      polyline.addLatLng([data.latitud, data.longitud]);
+            // Colocar un nuevo marcador en la posición proporcionada
+            marker = L.marker([latitude, longitude]).addTo(map);
+            map.setView([latitude, longitude], 13);
 
-      // Actualizar el marcador con la última ubicación
-      marker.setLatLng([data.latitud, data.longitud])
-       .bindPopup(`Fecha: ${data.fecha}<br>Altitud: ${data.altitud}`)
+            // Trazar la polilínea con todas las coordenadas
+            if (coordinates.length > 1) {
+                if (polyline) {
+                    map.removeLayer(polyline);
+                }
+                polyline = L.polyline(coordinates, { color: 'blue' }).addTo(map);
+            }
+        }
 
-      // Centrar el mapa en la última ubicación
-      map.panTo([data.latitud, data.longitud]);
-    }
+        // Función para obtener y mostrar las últimas coordenadas
+        function getAndShowLastCoordinate() {
+            fetch('/last-coordinate')
+            .then(response => response.json())
+            .then(data => {
+                const lastCoordinate = data.lastCoordinate;
+                if (lastCoordinate) {
+                    // Mostrar las coordenadas en el contenedor de texto
+                    const dataContainer = document.getElementById('data-container');
+                    dataContainer.innerHTML = `<p>Latitud: ${lastCoordinate.latitud}</p>
+                                               <p>Longitud: ${lastCoordinate.longitud}</p>
+                                               <p>Fecha: ${lastCoordinate.fecha}</p>
+                                               <p>Altitud: ${lastCoordinate.altitud}</p>`;
+                    // Colocar un marcador en el mapa
+                    placeMarker(lastCoordinate.latitud, lastCoordinate.longitud);
+                }
+            })
+            .catch(error => console.error('Error al obtener la última coordenada:', error));
+        }
 
-    // Escucha eventos de mensajes del socket WebSocket
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      updateMarkerAndMap(data);
-    };
+        // Llamar a la función al cargar la página
+        getAndShowLastCoordinate();
 
+        // Escuchar eventos de coordenadas del servidor
+        socket.on('coordenadas', function(data) {
+            // Mostrar las coordenadas en el contenedor de texto
+            const dataContainer = document.getElementById('data-container');
+            dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
+                                       <p>Longitud: ${data.longitud}</p>
+                                       <p>Fecha: ${data.fecha}</p>
+                                       <p>Altitud: ${data.altitud}</p>`;
 
-      // Agrega filas de datos a la tabla
-    document.getElementById('Historicos').addEventListener('click', () => {
-      window.location.href = '/Historicos';
-    });
-  </script>
+            // Colocar un marcador en el mapa
+            placeMarker(data.latitud, data.longitud);
+        });
+    </script>
 </body>
 </html>
