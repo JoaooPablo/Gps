@@ -6,17 +6,61 @@
     <title>Web Server</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        #map { height: 400px; }
-        #title { text-align: center; }
+        body, html {
+          background-color: #141414;
+          color: #fff;
+          font-family: 'Helvetica Neue', Arial, sans-serif;
+          justify-content: center;
+          align-items: center;
+        }
+
+        #map {
+          height: 450px;
+          border: 1px solid #333;
+          margin: 30px;
+        }
+
+        #title {
+          text-align: center;
+          font-size: 1.8rem;
+          margin-bottom: 1rem;
+        }
+
+        #data-container {
+          background-color: #222;
+          padding: 1rem;
+          border-radius: 5px;
+        }
+
+        h1, p {
+          margin: 0;
+        }
+
+        button {
+          background-color: #e50914;
+          border: none;
+          border-radius: 5px;
+          color: #fff;
+          padding: 0.5rem 1rem;
+          text-transform: uppercase;
+          cursor: pointer;
+          font-size: 1.1rem;
+          margin-top: 1rem;
+        }
+
+        button:hover {
+          background-color: #f00;
+        }
+
     </style>
 </head>
 <body>
     <h1 id="title">Web Server</h1>
     <div id="map"></div>
     <div id="data-container">
-        <!-- Aquí se mostrarán las coordenadas -->
+        <!-- Coordinate data will be shown here -->
     </div>
-    <button onclick="window.location.href='/Historicos'">Históricos</button>
+    <button onclick="window.location.href='/Historicos'">Historicos</button>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -28,10 +72,8 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        var coordinates = []; // Arreglo para almacenar las coordenadas
-        var polyline; // Variable para la polilínea
-
-        // Función para colocar un marcador en el mapa
+        var coordinates = [];
+        var polyline;
         function placeMarker(latitude, longitude) {
             // Agregar la coordenada al arreglo
             coordinates.push([latitude, longitude]);
