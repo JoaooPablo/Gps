@@ -7,7 +7,7 @@ jobs:
     steps:
       - run: ssh -oStrictHostKeyChecking=no -v $USER@$DNS "./deploy.sh"
       - run: ssh -oStrictHostKeyChecking=no -v $USER@$DNS1 "./deploy.sh"
-
+      - run: ssh -oStrictHostKeyChecking=no -v $USER@$DNS2 "./deploy.sh"
 workflows:
   version: 2
   deploy-to-ec2:
