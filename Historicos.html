@@ -111,6 +111,13 @@
         maxZoom: 18,
     }).addTo(map);
 
+    document.addEventListener('DOMContentLoaded', function() {
+        const startDateInput = document.getElementById('start-date-time');
+        const currentDate = new Date();
+        const currentISODate = currentDate.toISOString().split('.')[0];
+        startDateInput.setAttribute('max', currentISODate);
+    });
+
     document.getElementById('filter-button').addEventListener('click', async function() {
         const startDate = document.getElementById('start-date-time').value;
         const endDate = document.getElementById('end-date-time').value;
