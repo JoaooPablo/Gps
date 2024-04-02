@@ -115,7 +115,7 @@
         const currentDate = new Date();
         const currentISODate = currentDate.toISOString().split('.')[0];
         const currentDatetime = currentISODate.slice(0, -1); 
-        startDateInput.setAttribute('max', currentISODate);
+        startDateInput.setAttribute('max', currentDatetime);
     });
 
     document.getElementById('filter-button').addEventListener('click', async function() {
