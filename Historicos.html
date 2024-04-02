@@ -112,11 +112,13 @@
     }).addTo(map);
 
     document.addEventListener('DOMContentLoaded', function() {
-        const startDateInput = document.getElementById('start-date-time');
-        const currentDate = new Date();
-        const currentISODate = currentDate.toISOString().split('.')[0];
-        startDateInput.setAttribute('max', currentISODate);
-    });
+    const startDateInput = document.getElementById('start-date-time');
+    const currentDate = new Date();
+    const currentISODate = currentDate.toISOString().split('.')[0]; // Obtener la fecha actual en formato ISO
+    const currentDatetime = currentISODate.slice(0, -1); // Eliminar la "Z" final para incluir la hora
+    startDateInput.setAttribute('max', currentDatetime);
+});
+
 
     document.getElementById('filter-button').addEventListener('click', async function() {
         const startDate = document.getElementById('start-date-time').value;
