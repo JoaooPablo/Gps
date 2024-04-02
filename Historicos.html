@@ -114,7 +114,7 @@
         const startDateInput = document.getElementById('start-date-time');
         const currentDate = new Date();
         const currentISODate = currentDate.toISOString().split('.')[0];
-        const currentDatetime = currentISODate.slice(0, -1); 
+        const currentDatetime = currentISODate.slice(0, -8); 
         startDateInput.setAttribute('max', currentDatetime);
     });
 
