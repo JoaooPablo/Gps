@@ -107,8 +107,14 @@
     <div id="map"></div>
     <div id="data-container"></div>
     <div class="input-container">
-        <input type="text" id="start-date-time" class="card" readonly onclick="openDateTimePicker('start-date-time')">
-        <input type="text" id="end-date-time" class="card" readonly onclick="openDateTimePicker('end-date-time')">
+        <!-- Campo de entrada oculto para la fecha de inicio -->
+        <input type="hidden" id="start-date-time-hidden">
+        <!-- Campo de entrada de fecha y hora para la fecha de inicio -->
+        <input type="datetime-local" id="start-date-time" class="card" readonly>
+        <!-- Campo de entrada oculto para la fecha de fin -->
+        <input type="hidden" id="end-date-time-hidden">
+        <!-- Campo de entrada de fecha y hora para la fecha de fin -->
+        <input type="datetime-local" id="end-date-time" class="card" readonly>
         <button id="filter-button" class="card">Filter</button>
     </div>
     <div id="slider-container" style="display: none;">
@@ -124,6 +130,29 @@
 <!-- Include Leaflet JavaScript -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const startDateInput = document.getElementById('start-date-time');
+        const endDateInput = document.getElementById('end-date-time');
+        const startDateHiddenInput = document.getElementById('start-date-time-hidden');
+        const endDateHiddenInput = document.getElementById('end-date-time-hidden');
+
+        // Sincronizar los valores de los campos de entrada ocultos con los campos de entrada de fecha y hora
+        startDateInput.addEventListener('change', function() {
+            startDateHiddenInput.value = this.value;
+        });
+
+        endDateInput.addEventListener('change', function() {
+            endDateHiddenInput.value = this.value;
+        });
+
+        // Inicializar las fechas máximas
+        const currentDate = new Date();
+        currentDate.setUTCHours(currentDate.getUTCHours() - 5);
+        const currentISODate = currentDate.toISOString().split('.')[0];
+        startDateInput.setAttribute('max', currentISODate);
+        endDateInput.setAttribute('max', currentISODate);
+    });
+
     var map = L.map('map').setView([10.9685, -74.7813], 13);
     var polyline;
     var marker;
@@ -136,21 +165,6 @@
     document.getElementById('back-button').addEventListener('click', function() {
         window.history.back();
     });
-
-    function openDateTimePicker(elementId) {
-        // Obtiene el input
-        var input = document.getElementById(elementId);
-
-        // Crea un evento de clic para abrir el datetime-local picker
-        var event = new MouseEvent('click', {
-            'view': window,
-            'bubbles': true,
-            'cancelable': false
-        });
-
-        // Dispara el evento de clic en el input
-        input.dispatchEvent(event);
-    }
 
     document.getElementById('filter-button').addEventListener('click', async function() {
         const startDate = document.getElementById('start-date-time').value;
