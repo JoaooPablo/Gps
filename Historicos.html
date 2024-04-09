@@ -12,53 +12,45 @@
             margin: 0;
             font-family: 'Helvetica Neue', Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
         }
 
         #container {
-            width: 90%;
+            width: 95%;
             max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: auto;
         }
 
         #map {
-            height: 500px;
-            margin-top: 20px;
-        }
-
-        .title {
-            text-align: center;
-            color: #ffffff;
-            padding: 1rem;
-            background-color: transparent; /* Cambiado a transparente */
-            margin-top: 0; /* Eliminar el margen superior */
-            margin-bottom: 1rem;
+            height: 50vh;
+            width: 100%;
+            margin-top: 5px;
         }
 
         .input-container {
             display: flex;
             justify-content: center;
-            margin-top: 20px;
-        }
-
-        .card.center-card {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 20px;
+            margin-top: 10px;
+            flex-wrap: wrap;
         }
 
         .card {
             background-color: #2F2F2F;
             border: solid 1px #424242;
             border-radius: 5px;
-            margin: 1rem;
+            margin: 0.5rem;
             padding: 1rem;
-            width: 20rem;
+            width: 100%;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
+
         input[type="datetime-local"] {
             background-color: #3c3c3c;
             color: #ffffff;
@@ -81,6 +73,32 @@
         #filter-button:hover {
             background-color: #f00;
         }
+
+        #slider-container {
+            width: 100%;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .control-deslizante {
+            width: 80%;
+            margin: 0 10px;
+            background: linear-gradient(to right, red, red) no-repeat;
+        }
+
+        /* Media Query para dispositivos con ancho máximo de 768px */
+        @media screen and (max-width: 768px) {
+            #map {
+                height: 300px;
+            }
+
+            .input-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -91,14 +109,17 @@
     <div class="input-container">
         <input type="datetime-local" id="start-date-time" class="card">
         <input type="datetime-local" id="end-date-time" class="card">
-        <button id="filter-button" class="card">Filter</button>
+        <button id="filter-button" class="card">Filtrar</button>
+    </div>
+    <div id="slider-container" style="display: none;">
+        <p style="color: white;">Desliza para ver recorrido:</p>
+        <input type="range" min="0" max="0" value="0" class="control-deslizante" id="data-slider">
     </div>
     <div id="filtered-data-container" style="display: none;">
-        <p>No se encontraron datos para el período seleccionado.</p>
+        <p style="color: white;">No se encontraron datos para el período seleccionado.</p>
     </div>
-    <div class="input-container" style="justify-content: flex-start;"></div>
-    <button id="back-button" class="card" style="background-color: #e50914; border: none; border-radius: 5px; color: #ffffff; padding: 5px 10px; text-transform: uppercase; cursor: pointer; font-size: 1rem; width: 80px;">Back</button>
-    </div>
+    <div class="input-container" style="justify-content: flex-start;">
+        <button id="back-button" class="card" style="background-color: #e50914; border: none; border-radius: 5px; color: #ffffff; padding: 5px 10px; text-transform: uppercase; cursor: pointer; font-size: 1rem; width: 80px;">Atrás</button>
     </div>
 </div>
 <!-- Include Leaflet JavaScript -->
@@ -119,14 +140,39 @@
 
     document.addEventListener('DOMContentLoaded', function() {
         const startDateInput = document.getElementById('start-date-time');
+        const endDateInput = document.getElementById('end-date-time');
+
         const currentDate = new Date();
+        currentDate.setUTCHours(currentDate.getUTCHours() - 5);
         const currentISODate = currentDate.toISOString().split('.')[0];
         startDateInput.setAttribute('max', currentISODate);
+
+        startDateInput.addEventListener('input', function() {
+            if (startDateInput.value) {
+                endDateInput.removeAttribute('readonly');
+                endDateInput.min = startDateInput.value;
+            } else {
+                endDateInput.setAttribute('readonly', true);
+                endDateInput.value = '';
+            }
+        });
     });
 
     document.getElementById('filter-button').addEventListener('click', async function() {
         const startDate = document.getElementById('start-date-time').value;
         const endDate = document.getElementById('end-date-time').value;
+
+        if (startDate && endDate && endDate < startDate) {
+            document.getElementById('end-date-time').value = startDate;
+            alert('La fecha y hora de fin no puede ser anterior a la fecha y hora de inicio.');
+            if (polyline) {
+                map.removeLayer(polyline);
+            }
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            return;
+        }
 
         const response = await fetch(`/filtrar?inicio=${startDate}&fin=${endDate}`);
         const data = await response.json();
@@ -141,31 +187,51 @@
                     map.removeLayer(marker);
                 }
                 polyline = L.polyline(latLngs, {color: 'blue'}).addTo(map);
-    
-                // Adjust map view to contain the polyline
+
                 map.fitBounds(polyline.getBounds());
-    
-                // Add marker at the last value of the filtered data
+
                 const lastIndex = data.length - 1;
                 const lastLatLng = [parseFloat(data[lastIndex].latitud), parseFloat(data[lastIndex].longitud)];
-                marker = L.marker(lastLatLng).addTo(map);
-    
+                marker = L.marker(lastLatLng).bindPopup(`Fecha: ${data[lastIndex].fecha}`).addTo(map);
+
+                const slider = document.getElementById('data-slider');
+                slider.max = data.length - 1;
+                slider.value = slider.max;
+                document.getElementById('slider-container').style.display = 'flex';
+
+                slider.addEventListener('input', function() {
+                    const index = parseInt(this.value);
+                    const selectedData = data[index];
+                    moveMarker(selectedData);
+                });
+
                 document.getElementById('filtered-data-container').style.display = 'none';
             }
         } else {
             alert('No se encontraron datos para el período seleccionado.');
-            // Remove polyline from the map if there is no data
             if (polyline) {
                 map.removeLayer(polyline);
             }
-            // Remove marker if there is no data
             if (marker) {
                 map.removeLayer(marker);
             }
-            // Show message that no data was found
             document.getElementById('filtered-data-container').style.display = 'block';
+            document.getElementById('slider-container').style.display = 'none';
         }
     });
+
+    function moveMarker(data) {
+        const latLng = [parseFloat(data.latitud), parseFloat(data.longitud)];
+
+        if (marker) {
+            marker.setLatLng(latLng);
+            marker.bindPopup(`Fecha: ${data.fecha}`).openPopup();
+        } else {
+            marker = L.marker(latLng).bindPopup(`Fecha: ${data.fecha}`).addTo(map);
+        }
+
+        map.setView(latLng);
+    }
 </script>
 </body>
 </html>
