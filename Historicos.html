@@ -136,13 +136,24 @@
         const startDateHiddenInput = document.getElementById('start-date-time-hidden');
         const endDateHiddenInput = document.getElementById('end-date-time-hidden');
 
-        // Sincronizar los valores de los campos de entrada ocultos con los campos de entrada de fecha y hora
-        startDateInput.addEventListener('change', function() {
-            startDateHiddenInput.value = this.value;
+        // Desactivar el evento input para evitar la edición mediante teclado
+        startDateInput.addEventListener('input', function(event) {
+            event.preventDefault();
+            return false;
         });
 
-        endDateInput.addEventListener('change', function() {
-            endDateHiddenInput.value = this.value;
+        endDateInput.addEventListener('input', function(event) {
+            event.preventDefault();
+            return false;
+        });
+
+        // Habilitar el evento click para abrir el selector de fecha y hora
+        startDateInput.addEventListener('click', function() {
+            this.focus();
+        });
+
+        endDateInput.addEventListener('click', function() {
+            this.focus();
         });
 
         // Inicializar las fechas máximas
@@ -243,5 +254,6 @@
 </script>
 </body>
 </html>
+
 
 
