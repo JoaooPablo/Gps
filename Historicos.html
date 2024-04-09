@@ -6,6 +6,8 @@
     <title>Historial</title>
     <!-- Include Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Include Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         body {
             background: linear-gradient(135deg, #242424, #141414);
@@ -51,7 +53,7 @@
             text-align: center;
         }
 
-        input[type="datetime-local"] {
+        input[type="text"] {
             background-color: #3c3c3c;
             color: #ffffff;
             border-radius: 5px;
@@ -107,8 +109,8 @@
     <div id="map"></div>
     <div id="data-container"></div>
     <div class="input-container">
-        <input type="datetime-local" id="start-date-time" class="card">
-        <input type="datetime-local" id="end-date-time" class="card" readonly>
+        <input type="text" id="start-date-time" class="card" placeholder="Inicio">
+        <input type="text" id="end-date-time" class="card" placeholder="Fin" disabled>
         <button id="filter-button" class="card">Filter</button>
     </div>
     <div id="slider-container" style="display: none;">
@@ -123,6 +125,8 @@
 </div>
 <!-- Include Leaflet JavaScript -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- Include Flatpickr JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     var map = L.map('map').setView([10.9685, -74.7813], 13);
     var polyline;
@@ -141,20 +145,24 @@
         const startDateInput = document.getElementById('start-date-time');
         const endDateInput = document.getElementById('end-date-time');
 
-        const currentDate = new Date();
-        currentDate.setUTCHours(currentDate.getUTCHours() - 5);
-        const currentISODate = currentDate.toISOString().split('.')[0];
-        startDateInput.setAttribute('max', currentISODate);
-
-        startDateInput.addEventListener('input', function() {
-            if (startDateInput.value) {
-                endDateInput.removeAttribute('readonly');
-                endDateInput.min = startDateInput.value;
-            } else {
-                endDateInput.setAttribute('readonly', true);
-                endDateInput.value = '';
+        flatpickr(startDateInput, {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            maxDate: "today",
+            onClose: function(selectedDates) {
+                if (selectedDates[0]) {
+                    endDateInput._flatpickr.set("minDate", selectedDates[0]);
+                    endDateInput.disabled = false;
+                }
             }
         });
+
+        flatpickr(endDateInput, {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            maxDate: "today"
+        });
+
     });
 
     document.getElementById('filter-button').addEventListener('click', async function() {
@@ -234,6 +242,3 @@
 </script>
 </body>
 </html>
-
-
-
