@@ -107,13 +107,7 @@
     <div id="map"></div>
     <div id="data-container"></div>
     <div class="input-container">
-        <!-- Campo de entrada oculto para la fecha de inicio -->
-        <input type="hidden" id="start-date-time-hidden">
-        <!-- Campo de entrada de fecha y hora para la fecha de inicio -->
-        <input type="datetime-local" id="start-date-time" class="card" readonly>
-        <!-- Campo de entrada oculto para la fecha de fin -->
-        <input type="hidden" id="end-date-time-hidden">
-        <!-- Campo de entrada de fecha y hora para la fecha de fin -->
+        <input type="datetime-local" id="start-date-time" class="card">
         <input type="datetime-local" id="end-date-time" class="card" readonly>
         <button id="filter-button" class="card">Filter</button>
     </div>
@@ -130,40 +124,6 @@
 <!-- Include Leaflet JavaScript -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const startDateInput = document.getElementById('start-date-time');
-        const endDateInput = document.getElementById('end-date-time');
-        const startDateHiddenInput = document.getElementById('start-date-time-hidden');
-        const endDateHiddenInput = document.getElementById('end-date-time-hidden');
-
-        // Desactivar el evento input para evitar la edición mediante teclado
-        startDateInput.addEventListener('input', function(event) {
-            event.preventDefault();
-            return false;
-        });
-
-        endDateInput.addEventListener('input', function(event) {
-            event.preventDefault();
-            return false;
-        });
-
-        // Habilitar el evento click para abrir el selector de fecha y hora
-        startDateInput.addEventListener('click', function() {
-            this.focus();
-        });
-
-        endDateInput.addEventListener('click', function() {
-            this.focus();
-        });
-
-        // Inicializar las fechas máximas
-        const currentDate = new Date();
-        currentDate.setUTCHours(currentDate.getUTCHours() - 5);
-        const currentISODate = currentDate.toISOString().split('.')[0];
-        startDateInput.setAttribute('max', currentISODate);
-        endDateInput.setAttribute('max', currentISODate);
-    });
-
     var map = L.map('map').setView([10.9685, -74.7813], 13);
     var polyline;
     var marker;
@@ -175,6 +135,26 @@
 
     document.getElementById('back-button').addEventListener('click', function() {
         window.history.back();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const startDateInput = document.getElementById('start-date-time');
+        const endDateInput = document.getElementById('end-date-time');
+
+        const currentDate = new Date();
+        currentDate.setUTCHours(currentDate.getUTCHours() - 5);
+        const currentISODate = currentDate.toISOString().split('.')[0];
+        startDateInput.setAttribute('max', currentISODate);
+
+        startDateInput.addEventListener('input', function() {
+            if (startDateInput.value) {
+                endDateInput.removeAttribute('readonly');
+                endDateInput.min = startDateInput.value;
+            } else {
+                endDateInput.setAttribute('readonly', true);
+                endDateInput.value = '';
+            }
+        });
     });
 
     document.getElementById('filter-button').addEventListener('click', async function() {
