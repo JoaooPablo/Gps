@@ -107,8 +107,8 @@
     <div id="map"></div>
     <div id="data-container"></div>
     <div class="input-container">
-        <input type="datetime-local" id="start-date-time" class="card">
-        <input type="datetime-local" id="end-date-time" class="card" readonly>
+        <input type="text" id="start-date-time" class="card" readonly onclick="openDateTimePicker('start-date-time')">
+        <input type="text" id="end-date-time" class="card" readonly onclick="openDateTimePicker('end-date-time')">
         <button id="filter-button" class="card">Filter</button>
     </div>
     <div id="slider-container" style="display: none;">
@@ -137,25 +137,20 @@
         window.history.back();
     });
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const startDateInput = document.getElementById('start-date-time');
-        const endDateInput = document.getElementById('end-date-time');
+    function openDateTimePicker(elementId) {
+        // Obtiene el input
+        var input = document.getElementById(elementId);
 
-        const currentDate = new Date();
-        currentDate.setUTCHours(currentDate.getUTCHours() - 5);
-        const currentISODate = currentDate.toISOString().split('.')[0];
-        startDateInput.setAttribute('max', currentISODate);
-
-        startDateInput.addEventListener('input', function() {
-            if (startDateInput.value) {
-                endDateInput.removeAttribute('readonly');
-                endDateInput.min = startDateInput.value;
-            } else {
-                endDateInput.setAttribute('readonly', true);
-                endDateInput.value = '';
-            }
+        // Crea un evento de clic para abrir el datetime-local picker
+        var event = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': false
         });
-    });
+
+        // Dispara el evento de clic en el input
+        input.dispatchEvent(event);
+    }
 
     document.getElementById('filter-button').addEventListener('click', async function() {
         const startDate = document.getElementById('start-date-time').value;
@@ -234,4 +229,5 @@
 </script>
 </body>
 </html>
+
 
