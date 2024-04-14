@@ -151,11 +151,13 @@
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             maxDate: "today",
+            disableMobile: true,
             onClose: function(selectedDates) {
                 if (selectedDates[0]) {
                     endDateInput._flatpickr.set("minDate", selectedDates[0]);
                     endDateInput.disabled = false;
-                    endDateInput.focus(); // Enfoca el campo de fecha y hora final al seleccionar la fecha y hora de inicio
+                    endDateInput.focus();
+                    endDateInput._flatpickr.open();
                 }
             }
         });
@@ -165,12 +167,6 @@
             maxDate: "today"
         });
 
-        // Añadir evento táctil para enfocar el campo de fecha y hora final
-        startDateInput.addEventListener('change', function() {
-            if (this.value !== "") {
-                endDateInput.disabled = false; // Habilitar el campo de fecha y hora final
-            }
-        });
     });
     
 
@@ -251,3 +247,4 @@
 </script>
 </body>
 </html>
+
