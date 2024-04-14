@@ -146,25 +146,23 @@
     document.addEventListener('DOMContentLoaded', function() {
         const startDateInput = document.getElementById('start-date-time');
         const endDateInput = document.getElementById('end-date-time');
-        flatpickr(startDateInput, {
+        
+        flatpickr(startDateInput,, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
-            maxDate: "today",
-            onChange: function(selectedDates) {
-                if (selectedDates[0]) {
-                    endDateInput._flatpickr.set("minDate", selectedDates[0]);
-                    endDateInput.disabled = false;
-                }
-            }
+            maxDate: "today"
         });
-
         flatpickr(endDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             maxDate: "today"
         });
+        endDateInput.addEventListener('click', function() {
+            this._flatpickr.set("minDate", startDateInput.value || "today");
+        });
 
     });
+    
 
     document.getElementById('filter-button').addEventListener('click', async function() {
         const startDate = document.getElementById('start-date-time').value;
