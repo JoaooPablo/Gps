@@ -155,7 +155,7 @@
                 if (selectedDates[0]) {
                     endDateInput._flatpickr.set("minDate", selectedDates[0]);
                     endDateInput.disabled = false;
-                    endDateInput.focus();
+                    endDateInput.focus(); // Enfoca el campo de fecha y hora final al seleccionar la fecha y hora de inicio
                 }
             }
         });
@@ -165,6 +165,10 @@
             maxDate: "today"
         });
 
+        // Añadir evento táctil para enfocar el campo de fecha y hora final
+        endDateInput.addEventListener('touchstart', function() {
+            this.focus();
+        });
     });
     
 
