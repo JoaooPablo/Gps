@@ -147,18 +147,21 @@
         const startDateInput = document.getElementById('start-date-time');
         const endDateInput = document.getElementById('end-date-time');
         
-        flatpickr(startDateInput,, {
+        flatpickr(startDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
-            maxDate: "today"
+            maxDate: "today",
+            onClose: function(selectedDates) {
+                if (selectedDates[0]) {
+                    endDateInput._flatpickr.set("minDate", selectedDates[0]);
+                    endDateInput.disabled = false;
+                }
+            }
         });
         flatpickr(endDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             maxDate: "today"
-        });
-        endDateInput.addEventListener('click', function() {
-            this._flatpickr.set("minDate", startDateInput.value || "today");
         });
 
     });
