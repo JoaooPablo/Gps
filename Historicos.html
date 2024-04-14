@@ -166,8 +166,10 @@
         });
 
         // Añadir evento táctil para enfocar el campo de fecha y hora final
-        endDateInput.addEventListener('touchstart', function() {
-            this.focus();
+        startDateInput.addEventListener('change', function() {
+            if (this.value !== "") {
+                endDateInput.disabled = false; // Habilitar el campo de fecha y hora final
+            }
         });
     });
     
