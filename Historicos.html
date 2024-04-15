@@ -151,13 +151,7 @@
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             maxDate: "today",
-            disableMobile: true,
-            onClose: function(selectedDates) {
-                if (selectedDates[0]) {
-                    endDateInput.disabled = false;
-                    endDateInput.focus();
-                }
-            }
+            disableMobile: true
         });
         const fpEndDate = flatpickr(endDateInput, {
             enableTime: true,
@@ -171,6 +165,11 @@
                 endDateInput.disabled = false;
                 endDateInput.focus();
             }
+        });
+
+        // Open the end date picker after selecting a date in the start date picker
+        startDateInput.addEventListener('change', function() {
+            fpEndDate.open();
         });
     });
 
@@ -251,6 +250,4 @@
 </script>
 </body>
 </html>
-
-
 
