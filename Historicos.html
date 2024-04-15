@@ -112,7 +112,7 @@
         <label for="start-date-time" style="color: white;">Select the start time:</label>
         <input type="text" id="start-date-time" class="card" placeholder="Start">
         <label for="end-date-time" style="color: white;">Select the end time:</label>
-        <input type="text" id="end-date-time" class="card" placeholder="End" disabled>
+        <input type="text" id="end-date-time" class="card" placeholder="End">
         <button id="filter-button" class="card">Filter</button>
     </div>
     <div id="slider-container" style="display: none;">
@@ -147,31 +147,26 @@
         const startDateInput = document.getElementById('start-date-time');
         const endDateInput = document.getElementById('end-date-time');
         
-        const fpStartDate = flatpickr(startDateInput, {
+        flatpickr(startDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             maxDate: "today",
-            disableMobile: true
+            onClose: function(selectedDates) {
+                if (selectedDates[0]) {
+                    endDateInput._flatpickr.set("minDate", selectedDates[0]);
+                    endDateInput.disabled = false;
+                    endDateInput.focus();
+                }
+            }
         });
-        const fpEndDate = flatpickr(endDateInput, {
+        flatpickr(endDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             maxDate: "today"
         });
 
-        startDateInput.addEventListener('change', function() {
-            fpEndDate.set("minDate", startDateInput.value);
-            if (startDateInput.value) {
-                endDateInput.disabled = false;
-                endDateInput.focus();
-            }
-        });
-
-        // Open the end date picker after selecting a date in the start date picker
-        startDateInput.addEventListener('change', function() {
-            fpEndDate.open();
-        });
     });
+    
 
     document.getElementById('filter-button').addEventListener('click', async function() {
         const startDate = document.getElementById('start-date-time').value;
@@ -250,4 +245,3 @@
 </script>
 </body>
 </html>
-
