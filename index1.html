@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Eye</title>
+    <title>GlobalEye</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
         body, html {
@@ -22,8 +22,10 @@
 
         #map {
             height: 60vh; /* Altura del mapa en el 60% del viewport height */
-            margin: 0 auto; /* Centrar el mapa horizontalmente */
-            max-width: 100%; /* Asegurar que el mapa no supere el ancho máximo */
+            margin: 25px auto 0; /* Margen superior de 15px, centrado horizontalmente */
+            max-width: calc(100% - 40px); /* Restar el doble del margen (15px a cada lado) */
+            position: relative;
+            z-index: 1;
         }
 
         #data-container {
@@ -38,7 +40,7 @@
             margin: 0;
         }
 
-        button {
+        .button {
             background-color: #e50914;
             border: none;
             border-radius: 5px;
@@ -52,7 +54,7 @@
             margin: 0 auto; /* Centrar el botón horizontalmente */
         }
 
-        button:hover {
+        .button:hover {
             background-color: #f00;
         }
 
@@ -62,20 +64,99 @@
                 font-size: 1.5rem;
             }
         }
+        /* Estilos para el sidebar */
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            z-index: 2;
+            top: 0;
+            left: -250px; /* Esconder el sidebar inicialmente */
+            background-color: #333;
+            padding-top: 60px;
+            transition: left 0.3s; /* Agregar transición para animación */
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-img {
+            display: block;
+            margin: 0 auto;
+            width: 170px; /* Cambiar el ancho del ícono según sea necesario */
+            height: auto; /* Para mantener la proporción de aspecto */
+        }
+
+        .sidebar-text {
+            font-size: 1.5rem; /* Tamaño de fuente grande */
+            margin-bottom: 1rem; /* Espacio inferior */
+        }
+
+        .sidebar-info {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .sidebar a {
+            padding: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #555;
+        }
+
+        .open-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #e50914;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 999; /* Asegurar que esté por encima de otros elementos */
+        }
 
     </style>
 </head>
 <body>
+    <!-- Botón para abrir o cerrar el sidebar -->
+    <div class="open-btn" onclick="toggleSidebar()">&#9776;</div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <a href="/Historicos" class="button" style="margin-top: 20px">History</a>
+        <a href="/informacion" class="button" style="margin-top: 10px" >Acerca de</a>
+    </div>
+
     <h1 id="title">Global Eye</h1>
     <div id="map"></div>
     <div id="data-container">
         <!-- Coordinate data will be shown here -->
     </div>
-    <button onclick="window.location.href='/Historicos'">History</button>
+    <button onclick="window.location.href='/Historicos'" class="button">History</button>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
+        var sidebarOpen = false;
+
+        // Función para abrir o cerrar el sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            sidebar.style.left = sidebar.style.left === "0px" ? "-250px" : "0px";
+            sidebarOpen = !sidebarOpen;
+        }
+
         var socket = io();
         var marker;
         var map = L.map('map').setView([0, 0], 13);
@@ -141,6 +222,12 @@
 
             // Colocar un marcador en el mapa
             placeMarker(data.latitud, data.longitud);
+        });
+
+        // Centrar el mapa en la página después de que el mapa se haya cargado completamente
+        map.on('load', function() {
+            map.invalidateSize(); // Actualizar el tamaño del mapa para que se ajuste al contenedor
+            map.setView([0, 0], 2); // Establecer la vista del mapa en el centro del mundo con un zoom de nivel 2
         });
     </script>
 </body>
