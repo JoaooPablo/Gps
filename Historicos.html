@@ -147,28 +147,32 @@
         const startDateInput = document.getElementById('start-date-time');
         const endDateInput = document.getElementById('end-date-time');
         
-        flatpickr(startDateInput, {
+        const fpStartDate = flatpickr(startDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             maxDate: "today",
             disableMobile: true,
             onClose: function(selectedDates) {
                 if (selectedDates[0]) {
-                    endDateInput._flatpickr.set("minDate", selectedDates[0]);
                     endDateInput.disabled = false;
                     endDateInput.focus();
-                    endDateInput._flatpickr.open();
                 }
             }
         });
-        flatpickr(endDateInput, {
+        const fpEndDate = flatpickr(endDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             maxDate: "today"
         });
 
+        startDateInput.addEventListener('change', function() {
+            fpEndDate.set("minDate", startDateInput.value);
+            if (startDateInput.value) {
+                endDateInput.disabled = false;
+                endDateInput.focus();
+            }
+        });
     });
-    
 
     document.getElementById('filter-button').addEventListener('click', async function() {
         const startDate = document.getElementById('start-date-time').value;
@@ -247,5 +251,6 @@
 </script>
 </body>
 </html>
+
 
 
