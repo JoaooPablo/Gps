@@ -8,7 +8,6 @@ const mysql = require('mysql');
 const path = require('path');
 require('dotenv').config();
 
-
 // Crear una conexión a la base de datos MySQL
 const dbConnection = mysql.createConnection({
   host: process.env.DB_HOST,
@@ -101,10 +100,14 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index1.html');
 });
 
+app.get('/informacion', (req, res) => {
+    res.sendFile(__dirname + '/info.html');
+});
+
 // Configurar Socket.IO
 io.on('connection', (socket) => {
     console.log('Un cliente se ha conectado');
 });
 
-// Iniciar el servidor HTTP en el puerto 3000
+// Iniciar el servidor HTTP en el puerto 80
 http.listen(80);
