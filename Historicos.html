@@ -147,18 +147,19 @@
         const startDateInput = document.getElementById('start-date-time');
         const endDateInput = document.getElementById('end-date-time');
         
-        const startDatePicker =flatpickr(startDateInput, {
+        flatpickr(startDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             maxDate: "today",
             onClose: function(selectedDates) {
                 if (selectedDates[0]) {
-                    endDatePicker.set("minDate", selectedDates[0]);
-                    endDatePicker.open();
+                    endDateInput._flatpickr.set("minDate", selectedDates[0]);
+                    endDateInput.disabled = false;
+                    endDateInput.focus();
                 }
             }
         });
-        const endDatePicker = flatpickr(endDateInput, {
+        flatpickr(endDateInput, {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             maxDate: "today"
@@ -244,4 +245,3 @@
 </script>
 </body>
 </html>
-
