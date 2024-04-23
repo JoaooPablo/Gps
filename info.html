@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlobalEye</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        ul {
+            list-style-type: disc;
+            padding-left: 20px;
+        }
+        /* Estilos para la barra lateral */
+        .sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            z-index: 2;
+            top: 0;
+            left: -250px; /* Esconder el sidebar inicialmente */
+            background-color: #333;
+            padding-top: 60px;
+            transition: left 0.3s; /* Agregar transición para animación */
+        }
+
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-img {
+            display: block;
+            margin: 0 auto;
+            width: 170px; /* Cambiar el ancho del ícono según sea necesario */
+            height: auto; /* Para mantener la proporción de aspecto */
+        }
+
+        .sidebar-text {
+            font-size: 1.5rem; /* Tamaño de fuente grande */
+            font-weight: bold; /* Negrita */
+            margin-bottom: 1rem; /* Espacio inferior */
+        }
+
+        .sidebar-info {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .sidebar-button {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .sidebar-button a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #e50914;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar-button a:hover {
+            background-color: #c40510;
+        }
+
+        .sidebar a {
+            padding: 10px;
+            text-decoration: none;
+            font-size: 18px;
+            color: #fff;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #555;
+        }
+
+        .open-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: #e50914;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 999; /* Asegurar que esté por encima de otros elementos */
+        }
+    </style>
+</head>
+<body>
+    <div class="open-btn" onclick="toggleSidebar()">&#9776;</div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-button">
+            <a href="/">Home</a>
+            <a href="/Historicos" style=" margin-top: 10px;">History</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Global Eye</h1>
+        <h2>¿Quiénes Somos?</h2>
+        <p>Somos apasionados en el desarrollo de soluciones tecnológicas innovadoras que satisfagan las necesidades de nuestros clientes. Nuestro proyecto más reciente, GlobalEye, es una combinación entre una aplicación móvil que permite a los usuarios compartir su ubicación en tiempo real con una página web.</p>
+        <p>A través de esta página web, los usuarios pueden:</p>
+        <ul>
+            <li>Visualizar su ubicación actual: La aplicación muestra tu ubicación en un mapa interactivo, permitiendo un seguimiento preciso de tu paradero.</li>
+            <li>Monitorear tu recorrido en tiempo real: Observa tu trayectoria a medida que te desplazas.</li>
+            <li>Analizar tu historial de recorridos: Accede a un registro detallado de tus desplazamientos anteriores, seleccionando ventanas de tiempo específicas para un análisis más profundo.</li>
+            <li>Revivir tus recorridos paso a paso: Utiliza la función de slider para navegar por tu historial de ubicaciones, reviviendo cada momento de tu recorrido con precisión.</li>
+        </ul>
+        <p>GlobalEye es la herramienta ideal para:</p>
+        <ul>
+            <li>Empresas que buscan monitorear la ubicación de sus empleados o activos.</li>
+            <li>Familias que desean mantenerse conectadas y compartir su ubicación con sus seres queridos.</li>
+            <li>Personas que disfrutan de registrar sus actividades al aire libre y compartirlas con amigos.</li>
+        </ul>
+        <p>Estamos comprometidos con el desarrollo de aplicaciones útiles y fáciles de usar que mejoren la vida de nuestros usuarios. GlobalEye es solo un ejemplo de nuestro compromiso con la innovación y la satisfacción del cliente.</p>
+        <p>¡Usa GlobalEye hoy mismo y comienza a disfrutar de sus increíbles beneficios!</p>
+        <h2>GlobalEye</h2>
+        <p>Track a world possibilities.</p>
+    </div>
+
+    <script>
+        // Variable para controlar si la barra lateral está abierta o cerrada
+        var sidebarOpen = false;
+
+        // Función para abrir o cerrar el sidebar
+        function toggleSidebar() {
+            if (sidebarOpen) {
+                document.getElementById("sidebar").style.left = "-250px";
+            } else {
+                document.getElementById("sidebar").style.left = "0";
+            }
+            sidebarOpen = !sidebarOpen;
+        }
+    </script>
+</body>
+</html>
