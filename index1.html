@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,6 +13,8 @@
             font-family: 'Helvetica Neue', Arial, sans-serif;
             padding: 0;
             margin: 0;
+            position: relative;
+            height: 100%;
         }
 
         #title {
@@ -21,9 +24,9 @@
         }
 
         #map {
-            height: 60vh; /* Altura del mapa en el 60% del viewport height */
-            margin: 25px auto 0; /* Margen superior de 15px, centrado horizontalmente */
-            max-width: calc(100% - 40px); /* Restar el doble del margen (15px a cada lado) */
+            height: calc(100% - 130px); /* Restar la altura del círculo de velocidad */
+            margin: 25px auto 0;
+            max-width: calc(100% - 40px);
             position: relative;
             z-index: 1;
         }
@@ -32,8 +35,8 @@
             background-color: #222;
             padding: 1rem;
             border-radius: 5px;
-            margin: 1rem auto; /* Centrar el contenedor de datos horizontalmente */
-            max-width: 90%; /* Limitar el ancho máximo del contenedor */
+            margin: 1rem auto;
+            max-width: 90%;
         }
 
         h1, p {
@@ -41,14 +44,14 @@
         }
 
         .centered-list {
-            list-style-type: none; /* Remueve los marcadores de lista */
-            padding: 0; /* Remueve el padding por defecto */
-            text-align: center; /* Alinea el texto al centro */
+            list-style-type: none;
+            padding: 0;
+            text-align: center;
         }
         
         .centered-list li {
-            display: inline-block; /* Hace que los items de la lista se alineen en línea */
-            margin: 0 10px; /* Agrega un pequeño margen horizontal entre items si agregas más */
+            display: inline-block;
+            margin: 0 10px;
         }
 
         .button {
@@ -61,31 +64,24 @@
             cursor: pointer;
             font-size: 1.1rem;
             margin-top: 1rem;
-            display: block; /* Convertir el botón en un bloque para centrarlo */
-            margin: 0 auto; /* Centrar el botón horizontalmente */
+            display: block;
+            margin: 0 auto;
         }
 
         .button:hover {
             background-color: #f00;
         }
 
-        /* Media Query para dispositivos de hasta 600px de ancho */
-        @media only screen and (max-width: 600px) {
-            #title {
-                font-size: 1.5rem;
-            }
-        }
-        /* Estilos para el sidebar */
         .sidebar {
             height: 100%;
             width: 250px;
             position: fixed;
             z-index: 2;
             top: 0;
-            left: -250px; /* Esconder el sidebar inicialmente */
+            left: -250px;
             background-color: #333;
             padding-top: 60px;
-            transition: left 0.3s; /* Agregar transición para animación */
+            transition: left 0.3s;
         }
 
         .sidebar-header {
@@ -96,13 +92,13 @@
         .sidebar-img {
             display: block;
             margin: 0 auto;
-            width: 170px; /* Cambiar el ancho del ícono según sea necesario */
-            height: auto; /* Para mantener la proporción de aspecto */
+            width: 170px;
+            height: auto;
         }
 
         .sidebar-text {
-            font-size: 1.5rem; /* Tamaño de fuente grande */
-            margin-bottom: 1rem; /* Espacio inferior */
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .sidebar-info {
@@ -134,7 +130,44 @@
             padding: 10px 15px;
             font-size: 20px;
             cursor: pointer;
-            z-index: 999; /* Asegurar que esté por encima de otros elementos */
+            z-index: 999;
+        }
+
+        /* Estilos para el círculo de velocidad de Waze */
+        #speedCircleContainer {
+            position: absolute;
+            bottom: 10px;
+            left: 5px;
+            z-index: 2;
+        }
+
+        .sidebar-open #speedCircleContainer {
+            visibility: hidden;
+        }
+
+        /* Estilos para el círculo de velocidad de Waze */
+        body {
+            background-color: black;
+            color:white;
+        }
+        #speedCircle {
+            width: 150px;
+            height: 130px;
+        }
+        #speedText {
+            font-family: Arial, sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            fill: black;
+        }
+        #rpmText {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            fill: black;
         }
 
     </style>
@@ -159,6 +192,11 @@
     </div>
     <button onclick="window.location.href='/Historicos'" class="button">History</button>
 
+    <!-- Círculo de velocidad de Waze -->
+    <div id="speedCircleContainer">
+        <svg id="speedCircle"></svg>
+    </div>
+
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
@@ -169,6 +207,12 @@
             const sidebar = document.getElementById("sidebar");
             sidebar.style.left = sidebar.style.left === "0px" ? "-250px" : "0px";
             sidebarOpen = !sidebarOpen;
+            toggleCircleVisibility();
+        }
+
+        function toggleCircleVisibility() {
+            const speedCircleContainer = document.getElementById("speedCircleContainer");
+            speedCircleContainer.style.visibility = sidebarOpen ? "hidden" : "visible"; // Ocultar si el sidebar está abierto, mostrar si está cerrado
         }
 
         var socket = io();
@@ -181,19 +225,15 @@
         var coordinates = [];
         var polyline;
         function placeMarker(latitude, longitude) {
-            // Agregar la coordenada al arreglo
             coordinates.push([latitude, longitude]);
 
-            // Eliminar el marcador anterior, si existe
             if (marker) {
                 map.removeLayer(marker);
             }
 
-            // Colocar un nuevo marcador en la posición proporcionada
             marker = L.marker([latitude, longitude]).addTo(map);
             map.setView([latitude, longitude], );
 
-            // Trazar la polilínea con todas las coordenadas
             if (coordinates.length > 1) {
                 if (polyline) {
                     map.removeLayer(polyline);
@@ -202,47 +242,111 @@
             }
         }
 
-        // Función para obtener y mostrar las últimas coordenadas
         function getAndShowLastCoordinate() {
             fetch('/last-coordinate')
             .then(response => response.json())
             .then(data => {
                 const lastCoordinate = data.lastCoordinate;
                 if (lastCoordinate) {
-                    // Mostrar las coordenadas en el contenedor de texto
                     const dataContainer = document.getElementById('data-container');
                     dataContainer.innerHTML = `<p>Latitud: ${lastCoordinate.latitud}</p>
                                                <p>Longitud: ${lastCoordinate.longitud}</p>
                                                <p>Fecha: ${lastCoordinate.fecha}</p>
                                                <p>Altitud: ${lastCoordinate.altitud}</p>`;
-                    // Colocar un marcador en el mapa
                     placeMarker(lastCoordinate.latitud, lastCoordinate.longitud);
                 }
             })
             .catch(error => console.error('Error al obtener la última coordenada:', error));
         }
 
-        // Llamar a la función al cargar la página
         getAndShowLastCoordinate();
 
-        // Escuchar eventos de coordenadas del servidor
         socket.on('coordenadas', function(data) {
-            // Mostrar las coordenadas en el contenedor de texto
             const dataContainer = document.getElementById('data-container');
             dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
                                        <p>Longitud: ${data.longitud}</p>
                                        <p>Fecha: ${data.fecha}</p>
                                        <p>Altitud: ${data.altitud}</p>`;
-
-            // Colocar un marcador en el mapa
             placeMarker(data.latitud, data.longitud);
         });
 
-        // Centrar el mapa en la página después de que el mapa se haya cargado completamente
         map.on('load', function() {
-            map.invalidateSize(); // Actualizar el tamaño del mapa para que se ajuste al contenedor
-            map.setView([0, 0], 2); // Establecer la vista del mapa en el centro del mundo con un zoom de nivel 2
+            map.invalidateSize();
+            map.setView([0, 0], 2);
         });
+    </script>
+
+    <!-- Script para el círculo de velocidad de Waze -->
+    <script>
+        // Definir los parámetros del círculo
+        const circleRadius = 30; // Reducir el tamaño del círculo
+        const strokeWidth = 5;
+        const circleCenter = { x: 75, y: 75 }; // Ajustar el centro del círculo
+        const colors = ["#4CAF50", "#FFEB3B", "#FF5722"]; // Colores para diferentes rangos de velocidad
+        const maxRpm = 8000; // Valor máximo de RPM
+
+        // Crear el elemento SVG para el círculo
+        const svg = document.getElementById("speedCircle");
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        const speedArc = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const speedText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        const rpmText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+
+        // Definir atributos del círculo
+        circle.setAttribute("cx", circleCenter.x);
+        circle.setAttribute("cy", circleCenter.y);
+        circle.setAttribute("r", circleRadius);
+        circle.setAttribute("stroke", "#ccc"); // Updated stroke color
+        circle.setAttribute("stroke-width", strokeWidth);
+        circle.setAttribute("fill", "none");
+
+        // Definir función para dibujar el arco de velocidad
+        function drawSpeedArc(speedPercentage) {
+            const angle = (speedPercentage / 100) * 360; // Convertir el porcentaje de velocidad a grados
+            const colorIndex = Math.floor(speedPercentage / 33.33); // Dividir en tres rangos de velocidad
+            const color = colors[colorIndex]; // Asignar color seg��n el rango de velocidad
+
+            // Calcular los puntos inicial y final del arco
+            const startX = circleCenter.x + circleRadius * Math.cos((-90 * Math.PI) / 180); // Ángulo inicial: -90 grados
+            const startY = circleCenter.y + circleRadius * Math.sin((-90 * Math.PI) / 180);
+            const endX = circleCenter.x + circleRadius * Math.cos((angle - 90) * (Math.PI / 180));
+            const endY = circleCenter.y + circleRadius * Math.sin((angle - 90) * (Math.PI / 180));
+
+            // Definir atributos del arco
+            const largeArcFlag = angle > 180? 1 : 0; // Si el ángulo es mayor que 180, se debe utilizar el flag "large arc"
+            const pathData = [
+                `M ${startX},${startY}`, // Mover al punto inicial
+                `A ${circleRadius},${circleRadius} 0 ${largeArcFlag},1 ${endX},${endY}` // Arco hasta el punto final
+            ].join(" ");
+
+            // Agregar atributos del arco de velocidad
+            speedArc.setAttribute("d", pathData);
+            speedArc.setAttribute("stroke", color); // Updated stroke color
+            speedArc.setAttribute("stroke-width", 8); //Updated stroke width
+            speedArc.setAttribute("fill", "none");
+        }
+      
+        // Fijar el valor de velocidad a 4123 RPM
+        const selectedValue = 0; // Updated selected value
+        speedText.textContent = selectedValue;
+        drawSpeedArc((selectedValue / maxRpm) * 100);
+
+        // Definir atributos del texto de velocidad
+        speedText.setAttribute("id", "speedText");
+        speedText.setAttribute("x", circleCenter.x);
+        speedText.setAttribute("y", circleCenter.y);
+
+        // Definir atributos del texto de rpm
+        rpmText.setAttribute("id", "rpmText");
+        rpmText.setAttribute("x", circleCenter.x);
+        rpmText.setAttribute("y", circleCenter.y + 15); // Colocar debajo del número de velocidad
+        rpmText.textContent = "Rpm";
+
+        // Agregar elementos al SVG
+        svg.appendChild(circle);
+        svg.appendChild(speedArc);
+        svg.appendChild(speedText);
+        svg.appendChild(rpmText);
     </script>
 </body>
 </html>
