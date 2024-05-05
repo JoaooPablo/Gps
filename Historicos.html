@@ -333,9 +333,9 @@
 
         if (marker) {
             marker.setLatLng(latLng);
-            marker.bindPopup(`Date: ${data.fecha}`).openPopup();
+            marker.bindPopup(`Date: ${data.fecha}<br>RPM: ${data.RPM}`).openPopup();
         } else {
-            marker = L.marker(latLng).bindPopup(`Date: ${data.fecha}`).addTo(map);
+            marker = L.marker(latLng).bindPopup(`Date: ${data[lastIndex].fecha}<br>RPM: ${data[lastIndex].RPM}`).addTo(map);
         }
 
         map.setView(latLng);
