@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -156,7 +155,7 @@
         }
         #speedText {
             font-family: Arial, sans-serif;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             text-anchor: middle;
             dominant-baseline: middle;
@@ -164,7 +163,7 @@
         }
         #rpmText {
             font-family: Arial, sans-serif;
-            font-size: 14px;
+            font-size: 12px;
             text-anchor: middle;
             dominant-baseline: middle;
             fill: black;
@@ -252,7 +251,8 @@
                     dataContainer.innerHTML = `<p>Latitud: ${lastCoordinate.latitud}</p>
                                                <p>Longitud: ${lastCoordinate.longitud}</p>
                                                <p>Fecha: ${lastCoordinate.fecha}</p>
-                                               <p>Altitud: ${lastCoordinate.altitud}</p>`;
+                                               <p>Altitud: ${lastCoordinate.altitud}</p>
+                                               <p>RPM: ${lastCoordinate.RPM}</p>`;
                     placeMarker(lastCoordinate.latitud, lastCoordinate.longitud);
                 }
             })
@@ -266,8 +266,16 @@
             dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
                                        <p>Longitud: ${data.longitud}</p>
                                        <p>Fecha: ${data.fecha}</p>
-                                       <p>Altitud: ${data.altitud}</p>`;
+                                       <p>Altitud: ${data.altitud}</p>
+                                       <p>RPM: ${data.RPM}</p>`;
             placeMarker(data.latitud, data.longitud);
+
+            // Actualizar el texto de las RPM dentro del círculo
+            const speedText = document.getElementById('speedText');
+            speedText.textContent = data.RPM;
+
+            // Actualizar el arco de velocidad
+            drawSpeedArc((data.RPM / maxRpm) * 100);
         });
 
         map.on('load', function() {
@@ -304,7 +312,7 @@
         function drawSpeedArc(speedPercentage) {
             const angle = (speedPercentage / 100) * 360; // Convertir el porcentaje de velocidad a grados
             const colorIndex = Math.floor(speedPercentage / 33.33); // Dividir en tres rangos de velocidad
-            const color = colors[colorIndex]; // Asignar color seg��n el rango de velocidad
+            const color = colors[colorIndex]; // Asignar color según el rango de velocidad
 
             // Calcular los puntos inicial y final del arco
             const startX = circleCenter.x + circleRadius * Math.cos((-90 * Math.PI) / 180); // Ángulo inicial: -90 grados
@@ -326,11 +334,6 @@
             speedArc.setAttribute("fill", "none");
         }
       
-        // Fijar el valor de velocidad a 4123 RPM
-        const selectedValue = 0; // Updated selected value
-        speedText.textContent = selectedValue;
-        drawSpeedArc((selectedValue / maxRpm) * 100);
-
         // Definir atributos del texto de velocidad
         speedText.setAttribute("id", "speedText");
         speedText.setAttribute("x", circleCenter.x);
