@@ -31,22 +31,22 @@ const udpServer = dgram.createSocket('udp4');
 // Escuchar mensajes UDP en el puerto 7002
 udpServer.on('message', async (msg, rinfo) => {
   const messageString = msg.toString();
-
-  const match = messageString.match(/FH: (\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2}) Lat: (\d+\.\d+) Lon: (-?\d+\.\d+) Alt: (-?\d+\.\d+)/);
-
+  const match = messageString.match(/FH: (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) Lat: (\d+\.\d+) Lon: (-?\d+\.\d+) Alt: (-?\d+\.\d+) RPM: (\d+\.\d+)/);
   if (match) {
     const fechaString = match[1];
-    const fecha = moment(fechaString, 'DD/MM/YYYY HH:mm:ss').format('YYYY-MM-DD HH:mm:ss');
+    const fecha = moment(fechaString, 'YYYY-MM-DD HH:mm:ss').format('YYYY-MM-DD HH:mm:ss');
     const latitud = parseFloat(match[2]);
     const longitud = parseFloat(match[3]);
     const altitud = parseFloat(match[4]);
+    const rpm = parseFloat(match[5]);
+    // Ahora tienes todos los datos extraídos, incluyendo RPM.
 
     // Emitir los datos al cliente a través de Socket.IO
-    io.emit('coordenadas', { fecha, latitud, longitud, altitud });
+    io.emit('coordenadas', { fecha, latitud, longitud, altitud, rpm });
 
     // Insertar datos en la tabla coordenadas de MySQL
-    const sql = 'INSERT INTO coordenadas (fecha, latitud, longitud, altitud) VALUES (?, ?, ?, ?)';
-    const values = [fecha, latitud, longitud, altitud];
+    const sql = 'INSERT INTO coordenadas (fecha, latitud, longitud, altitud, RPM) VALUES (?, ?, ?, ?, ?)';
+    const values = [fecha, latitud, longitud, altitud, rpm];
 
     dbConnection.query(sql, values, (err, result) => {
       if (err) {
