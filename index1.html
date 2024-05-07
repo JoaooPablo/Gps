@@ -267,15 +267,15 @@
                                        <p>Longitud: ${data.longitud}</p>
                                        <p>Fecha: ${data.fecha}</p>
                                        <p>Altitud: ${data.altitud}</p>
-                                       <p>RPM: ${data.RPM}</p>`;
+                                       <p>RPM: ${data.rpm}</p>`;
             placeMarker(data.latitud, data.longitud);
 
             // Actualizar el texto de las RPM dentro del círculo
             const speedText = document.getElementById('speedText');
-            speedText.textContent = data.RPM;
+            speedText.textContent = data.rpm;
 
             // Actualizar el arco de velocidad
-            drawSpeedArc((data.RPM / maxRpm) * 100);
+            drawSpeedArc((data.rpm / maxRpm) * 100);
         });
 
         map.on('load', function() {
