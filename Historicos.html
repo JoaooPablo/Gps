@@ -332,10 +332,16 @@
             if (data.length > 0) {
                 const latLngs = data.map(item => [parseFloat(item.latitud), parseFloat(item.longitud)]);
                 if (latLngs.length > 0) {
+                    let color;
+                    if (selectedCar === 'black') {
+                        color = 'red'; // Cambiar a rojo para carro negro
+                    } else {
+                        color = 'blue'; // Mantener azul para carro rojo
+                    }
                     if (polyline) {
                         map.removeLayer(polyline);
                     }
-                    polyline = L.polyline(latLngs, {color: 'blue'}).addTo(map);
+                    polyline = L.polyline(latLngs, {color: color}).addTo(map);
 
                     map.fitBounds(polyline.getBounds());
 
@@ -439,3 +445,4 @@
     </script>
 </body>
 </html>
+
