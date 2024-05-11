@@ -34,7 +34,7 @@
             width: 110%;
             margin-top: 5px;
             position: relative;
-            z-index: 1
+            z-index: 1;
         }
 
         .input-container {
@@ -50,7 +50,19 @@
             border-radius: 5px;
             margin: 0.5rem;
             padding: 1rem;
-            width: 100%;
+            flex: 1; /* Ajusta el ancho automáticamente */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .select {
+            background-color: #2F2F2F;
+            border: solid 1px #424242;
+            color: #fff;
+            border-radius: 5px;
+            margin: 0.5rem;
+            padding: 1rem;
+            flex: 1; /* Ajusta el ancho automáticamente */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
@@ -61,6 +73,7 @@
             border-radius: 5px;
             padding: 5px;
             border: none;
+            flex: 1; /* Ajusta el ancho automáticamente */
         }
 
         #filter-button {
@@ -72,6 +85,8 @@
             text-transform: uppercase;
             cursor: pointer;
             font-size: 1.1rem;
+            margin: 0.5rem; /* Ajusta el margen */
+            flex: 1; /* Ajusta el ancho automáticamente */
         }
 
         #filter-button:hover {
@@ -91,6 +106,7 @@
             margin: 0 10px;
             background: linear-gradient(to right, red, red) no-repeat;
         }
+
         h1, p {
             margin: 0;
         }
@@ -124,6 +140,7 @@
                 align-items: center;
             }
         }
+
         .sidebar {
             height: 100%;
             width: 250px;
@@ -194,152 +211,231 @@
         <a href="/" class="button" style="margin-top: 20px" >Home</a>
         <a href="/informacion" class="button" style=" margin-top: 10px;">About</a>
     </div>
-<div id="container">
-    <h2 class="title" style="margin-top: 1rem;color: white">Review the record</h2>
-    <div id="map"></div>
-    <div id="data-container"></div>
-    <div class="input-container">
-        <label for="start-date-time" style="color: white;">Select the start time:</label>
-        <input type="text" id="start-date-time" class="card" placeholder="Start">
-        <label for="end-date-time" style="color: white;">Select the end time:</label>
-        <input type="text" id="end-date-time" class="card" placeholder="End">
-        <button id="filter-button" class="card">Filter</button>
+    <div id="container">
+        <h2 class="title" style="margin-top: 1rem;color: white">Review the record</h2>
+        <div id="map"></div>
+        <div id="data-container"></div>
+        <div class="input-container">
+            <input type="text" id="start-date-time" class="card" placeholder="Start">
+            <input type="text" id="end-date-time" class="card" placeholder="End">
+            <select id="car-select" class="select" disabled onchange="changeIcon()">
+                <option value="red">Carro Rojo</option>
+                <option value="black">Carro Negro</option>
+            </select>
+            <button id="filter-button" class="card">Filter</button>
+        </div>
+        <div id="slider-container" style="display: none;">
+            <p style="color: white;">Slide to see tour:</p>
+            <input type="range" min="0" max="0" value="0" class="control-deslizante" id="data-slider">
+        </div>
+        <div id="filtered-data-container" style="display: none;">
+            <p style="color: white;">No data found for the selected period.</p>
+        </div>
+        <div class="input-container" style="justify-content: flex-start;"></div>
+        <button id="back-button" class="card" style="background-color: #e50914; border: none; border-radius: 5px; color: #ffffff; padding: 5px 10px; text-transform: uppercase; cursor: pointer; font-size: 1rem; width: 80px;">Back</button>
     </div>
-    <div id="slider-container" style="display: none;">
-        <p style="color: white;">Slide to see tour:</p>
-        <input type="range" min="0" max="0" value="0" class="control-deslizante" id="data-slider">
-    </div>
-    <div id="filtered-data-container" style="display: none;">
-        <p style="color: white;">No data found for the selected period.</p>
-    </div>
-    <div class="input-container" style="justify-content: flex-start;"></div>
-    <button id="back-button" class="card" style="background-color: #e50914; border: none; border-radius: 5px; color: #ffffff; padding: 5px 10px; text-transform: uppercase; cursor: pointer; font-size: 1rem; width: 80px;">Back</button>
-</div>
-<!-- Include Leaflet JavaScript -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<!-- Include Flatpickr JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script>
-    var sidebarOpen = false;
+    <!-- Include Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Include Flatpickr JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        var sidebarOpen = false;
 
         // Función para abrir o cerrar el sidebar
-    function toggleSidebar() {
-        const sidebar = document.getElementById("sidebar");
-        sidebar.style.left = sidebar.style.left === "0px" ? "-250px" : "0px";
-        sidebarOpen = !sidebarOpen;
-    }
-    var map = L.map('map').setView([10.9685, -74.7813], 13);
-    var polyline;
-    var marker;
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
-        maxZoom: 18,
-    }).addTo(map);
-
-    document.getElementById('back-button').addEventListener('click', function() {
-        window.location.href='/';
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const startDateInput = document.getElementById('start-date-time');
-        const endDateInput = document.getElementById('end-date-time');
-        
-        flatpickr(startDateInput, {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            maxDate: "today",
-            onClose: function(selectedDates) {
-                if (selectedDates[0]) {
-                    endDateInput._flatpickr.set("minDate", selectedDates[0]);
-                    endDateInput.disabled = false;
-                    endDateInput.focus();
-                }
-            }
-        });
-        flatpickr(endDateInput, {
-            enableTime: true,
-            dateFormat: "Y-m-d H:i",
-            maxDate: "today"
-        });
-
-    });
-    
-
-    document.getElementById('filter-button').addEventListener('click', async function() {
-        const startDate = document.getElementById('start-date-time').value;
-        const endDate = document.getElementById('end-date-time').value;
-
-        if (startDate && endDate && endDate < startDate) {
-            document.getElementById('end-date-time').value = startDate;
-            alert('La fecha y hora de fin no puede ser anterior a la fecha y hora de inicio.');
-            if (polyline) {
-                map.removeLayer(polyline);
-            }
-            if (marker) {
-                map.removeLayer(marker);
-            }
-            return;
+        function toggleSidebar() {
+            const sidebar = document.getElementById("sidebar");
+            sidebar.style.left = sidebar.style.left === "0px" ? "-250px" : "0px";
+            sidebarOpen = !sidebarOpen;
         }
 
-        const response = await fetch(`/filtrar?inicio=${startDate}&fin=${endDate}`);
-        const data = await response.json();
+        var map = L.map('map').setView([10.9685, -74.7813], 13);
+        var polyline;
+        var marker;
 
-        if (data.length > 0) {
-            const latLngs = data.map(item => [parseFloat(item.latitud), parseFloat(item.longitud)]);
-            if (latLngs.length > 0) {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+            maxZoom: 18,
+        }).addTo(map);
+
+        var customIconRed = L.icon({
+            iconUrl: '/car.png',
+            iconSize: [30, 20],
+            iconAnchor: [15, 10],
+            popupAnchor: [0, -10]
+        });
+
+        var customIconBlack = L.icon({
+            iconUrl: '/ca1.png',
+            iconSize: [29, 20],
+            iconAnchor: [14.5, 10],
+            popupAnchor: [0, -10]
+        });
+
+        document.getElementById('back-button').addEventListener('click', function() {
+            window.location.href='/';
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const startDateInput = document.getElementById('start-date-time');
+            const endDateInput = document.getElementById('end-date-time');
+            const carSelect = document.getElementById('car-select');
+            const filterButton = document.getElementById('filter-button');
+
+            flatpickr(startDateInput, {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                maxDate: "today",
+                onClose: function(selectedDates) {
+                    if (selectedDates[0]) {
+                        endDateInput._flatpickr.set("minDate", selectedDates[0]);
+                        endDateInput.disabled = false;
+                        endDateInput.focus();
+                    }
+                }
+            });
+            flatpickr(endDateInput, {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+                maxDate: "today"
+            });
+
+            filterButton.addEventListener('click', filterData);
+            carSelect.addEventListener('change', filterData);
+        });
+
+        async function filterData() {
+            const startDate = document.getElementById('start-date-time').value;
+            const endDate = document.getElementById('end-date-time').value;
+            const selectedCar = document.getElementById('car-select').value;
+
+            if (startDate && endDate && endDate < startDate) {
+                document.getElementById('end-date-time').value = startDate;
+                alert('La fecha y hora de fin no puede ser anterior a la fecha y hora de inicio.');
                 if (polyline) {
                     map.removeLayer(polyline);
                 }
                 if (marker) {
                     map.removeLayer(marker);
                 }
-                polyline = L.polyline(latLngs, {color: 'blue'}).addTo(map);
-
-                map.fitBounds(polyline.getBounds());
-
-                const lastIndex = data.length - 1;
-                const lastLatLng = [parseFloat(data[lastIndex].latitud), parseFloat(data[lastIndex].longitud)];
-                marker = L.marker(lastLatLng).bindPopup(`Date: ${data[lastIndex].fecha}`).addTo(map);
-
-                const slider = document.getElementById('data-slider');
-                slider.max = data.length - 1;
-                slider.value = slider.max;
-                document.getElementById('slider-container').style.display = 'flex';
-
-                slider.addEventListener('input', function() {
-                    const index = parseInt(this.value);
-                    const selectedData = data[index];
-                    moveMarker(selectedData);
-                });
-
-                document.getElementById('filtered-data-container').style.display = 'none';
+                return;
             }
-        } else {
-            alert('No se encontraron datos para el período seleccionado.');
-            if (polyline) {
-                map.removeLayer(polyline);
+
+            let url;
+            if (selectedCar === 'black') {
+                url = `/filtrar1?inicio=${startDate}&fin=${endDate}&car=${selectedCar}`;
+            } else {
+                url = `/filtrar?inicio=${startDate}&fin=${endDate}&car=${selectedCar}`;
             }
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.length > 0) {
+                const latLngs = data.map(item => [parseFloat(item.latitud), parseFloat(item.longitud)]);
+                if (latLngs.length > 0) {
+                    if (polyline) {
+                        map.removeLayer(polyline);
+                    }
+                    polyline = L.polyline(latLngs, {color: 'blue'}).addTo(map);
+
+                    map.fitBounds(polyline.getBounds());
+
+                    const lastIndex = data.length - 1;
+                    const lastLatLng = [parseFloat(data[lastIndex].latitud), parseFloat(data[lastIndex].longitud)];
+
+                    if (marker) {
+                        map.panTo(lastLatLng);
+                        marker.setLatLng(lastLatLng);
+                        if (selectedCar === 'red') {
+                            marker.setIcon(customIconRed);
+                            marker.bindPopup(`Date: ${data[lastIndex].fecha}<br>RPM: ${data[lastIndex].RPM}`).openPopup();
+                        } else {
+                            marker.setIcon(customIconBlack);
+                            marker.bindPopup(`Date: ${data[lastIndex].fecha}`).openPopup();
+                        }
+                    } else {
+                        if (selectedCar === 'red') {
+                            marker = L.marker(lastLatLng, { icon: customIconRed }).bindPopup(`Date: ${data[lastIndex].fecha}<br>RPM: ${data[lastIndex].RPM}`).addTo(map);
+                        } else {
+                            marker = L.marker(lastLatLng, { icon: customIconBlack }).bindPopup(`Date: ${data[lastIndex].fecha}`).addTo(map);
+                        }
+                    }
+
+                    const slider = document.getElementById('data-slider');
+                    slider.max = lastIndex;
+                    slider.value = lastIndex;
+                    document.getElementById('slider-container').style.display = 'flex';
+
+                    slider.addEventListener('input', function() {
+                        const index = parseInt(this.value);
+                        const selectedData = data[index];
+                        moveMarker(selectedData);
+                    });
+
+                    document.getElementById('filtered-data-container').style.display = 'none';
+                }
+            } else {
+                alert('No se encontraron datos para el período seleccionado.');
+                if (polyline) {
+                    map.removeLayer(polyline);
+                }
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                document.getElementById('filtered-data-container').style.display = 'block';
+                document.getElementById('slider-container').style.display = 'none';
+            }
+        }
+
+        function moveMarker(data) {
+            const latLng = [parseFloat(data.latitud), parseFloat(data.longitud)];
+
             if (marker) {
-                map.removeLayer(marker);
+                map.panTo(latLng);
+                marker.setLatLng(latLng);
+                if (marker.options.icon === customIconRed) {
+                    marker.bindPopup(`Date: ${data.fecha}<br>RPM: ${data.RPM}`).openPopup();
+                } else {
+                    marker.bindPopup(`Date: ${data.fecha}`).openPopup();
+                }
             }
-            document.getElementById('filtered-data-container').style.display = 'block';
-            document.getElementById('slider-container').style.display = 'none';
-        }
-    });
-
-    function moveMarker(data) {
-        const latLng = [parseFloat(data.latitud), parseFloat(data.longitud)];
-
-        if (marker) {
-            marker.setLatLng(latLng);
-            marker.bindPopup(`Date: ${data.fecha}<br>RPM: ${data.RPM}`).openPopup();
-        } else {
-            marker = L.marker(latLng).bindPopup(`Date: ${data[lastIndex].fecha}<br>RPM: ${data[lastIndex].RPM}`).addTo(map);
         }
 
-        map.setView(latLng);
-    }
-</script>
+        function changeIcon() {
+            const selectedCar = document.getElementById('car-select').value;
+            if (selectedCar === 'black') {
+                if (marker) {
+                    marker.setIcon(customIconBlack);
+                    if (marker.options.icon === customIconRed) {
+                        marker.closePopup();
+                    }
+                }
+            } else {
+                if (marker) {
+                    marker.setIcon(customIconRed);
+                    if (marker.options.icon === customIconBlack) {
+                        marker.closePopup();
+                    }
+                }
+            }
+        }
+
+        // Función para habilitar o deshabilitar el select de carro según si se seleccionan las fechas
+        function toggleCarSelect() {
+            const startDate = document.getElementById('start-date-time').value;
+            const endDate = document.getElementById('end-date-time').value;
+            const carSelect = document.getElementById('car-select');
+
+            if (startDate && endDate) {
+                carSelect.disabled = false; // Si hay fechas seleccionadas, habilitar el select
+            } else {
+                carSelect.disabled = true; // De lo contrario, deshabilitarlo
+            }
+        }
+
+        // Llamar a la función cuando cambien las fechas o se haga clic en el botón de filtro
+        document.getElementById('start-date-time').addEventListener('change', toggleCarSelect);
+        document.getElementById('end-date-time').addEventListener('change', toggleCarSelect);
+        document.getElementById('filter-button').addEventListener('click', toggleCarSelect);
+    </script>
 </body>
 </html>
