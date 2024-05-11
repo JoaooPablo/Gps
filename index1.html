@@ -36,6 +36,8 @@
             border-radius: 5px;
             margin: 1rem auto;
             max-width: 90%;
+            display: flex; /* Divide el data-container en dos partes */
+            justify-content: space-between; /* Coloca las partes en los extremos */
         }
 
         h1, p {
@@ -169,6 +171,15 @@
             fill: black;
         }
 
+        .carro-rojo {
+            width: 38px;
+            height: 38px;
+            background-color: red;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+
     </style>
 </head>
 <body>
@@ -187,7 +198,11 @@
     </ul>
     <div id="map"></div>
     <div id="data-container">
-        <!-- Coordinate data will be shown here -->
+        <div id="coordinates">
+            <!-- Coordinate data will be shown here -->
+        </div>
+        <div id="coordinates1">
+        </div>
     </div>
     <button onclick="window.location.href='/Historicos'" class="button">History</button>
 
@@ -216,18 +231,27 @@
 
         var socket = io();
         var marker;
+        var marker1;
         var myIcon = L.icon({
-        iconUrl: 'Gps/car.png',
-        iconSize: [25, 15], // tamaño del ícono
-        iconAnchor: [0, 0],
+        iconUrl: '/car.png',
+        iconSize: [32, 22], // tamaño del ícono
+        iconAnchor: [15, 11],
          });
-        var map = L.map('map').setView([0, 0], 13);
+        var myIcon1 = L.icon({
+        iconUrl: '/ca1.png',
+        iconSize: [29, 20], // tamaño del ícono
+        iconAnchor: [14.5, 10],
+         });
+        var map = L.map('map').setView([0, 0], 8);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
         var coordinates = [];
         var polyline;
+        var coordinates1 = [];
+        var polyline1;
+
         function placeMarker(latitude, longitude) {
             coordinates.push([latitude, longitude]);
 
@@ -246,19 +270,39 @@
             }
         }
 
+        function placeMarker1(latitude1, longitude1) {
+            coordinates1.push([latitude1, longitude1]);
+
+            if (marker1) {
+                map.removeLayer(marker1);
+            }
+
+            marker1 = L.marker([latitude1, longitude1], {icon: myIcon1}).addTo(map);
+            map.setView([latitude1, longitude1], );
+
+            if (coordinates1.length > 1) {
+                if (polyline1) {
+                    map.removeLayer(polyline1);
+                }
+                polyline1 = L.polyline(coordinates1, { color: 'red' }).addTo(map);
+            }
+        }
+
         function getAndShowLastCoordinate() {
             fetch('/last-coordinate')
             .then(response => response.json())
             .then(data => {
                 const lastCoordinate = data.lastCoordinate;
                 if (lastCoordinate) {
-                    const dataContainer = document.getElementById('data-container');
-                    dataContainer.innerHTML = `<p>Latitud: ${lastCoordinate.latitud}</p>
+                    const coordinatesContainer = document.getElementById('coordinates');
+                    coordinatesContainer.innerHTML =`<p><strong>Carro Rojo</strong></p>
+                                               <p>Latitud: ${lastCoordinate.latitud}</p>
                                                <p>Longitud: ${lastCoordinate.longitud}</p>
                                                <p>Fecha: ${lastCoordinate.fecha}</p>
                                                <p>Altitud: ${lastCoordinate.altitud}</p>
                                                <p>RPM: ${lastCoordinate.RPM}</p>`;
                     placeMarker(lastCoordinate.latitud, lastCoordinate.longitud);
+                    adjustMapView();
                 }
             })
             .catch(error => console.error('Error al obtener la última coordenada:', error));
@@ -266,14 +310,36 @@
 
         getAndShowLastCoordinate();
 
+        function getAndShowLastCoordinate1() {
+            fetch('/last-coordinate1')
+            .then(response => response.json())
+            .then(data => {
+                const lastCoordinate1 = data.lastCoordinate1;
+                if (lastCoordinate1) {
+                    const coordinatesContainer1 = document.getElementById('coordinates1');
+                    coordinatesContainer1.innerHTML = `<p><strong>Carro Negro</strong></p>
+                                               <p>Latitud: ${lastCoordinate1.latitud}</p>
+                                               <p>Longitud: ${lastCoordinate1.longitud}</p>
+                                               <p>Fecha: ${lastCoordinate1.fecha}</p>
+                                               <p>Altitud: ${lastCoordinate1.altitud}</p`;
+                    placeMarker1(lastCoordinate1.latitud, lastCoordinate1.longitud);
+                    adjustMapView();
+                }
+            })
+            .catch(error => console.error('Error al obtener la última coordenada:', error));
+        }
+        getAndShowLastCoordinate1();
+
         socket.on('coordenadas', function(data) {
-            const dataContainer = document.getElementById('data-container');
-            dataContainer.innerHTML = `<p>Latitud: ${data.latitud}</p>
+            const coordinatesContainer = document.getElementById('coordinates');
+            coordinatesContainer.innerHTML = `<p><strong>Carro Rojo</strong></p>
+                                       <p>Latitud: ${data.latitud}</p>
                                        <p>Longitud: ${data.longitud}</p>
                                        <p>Fecha: ${data.fecha}</p>
                                        <p>Altitud: ${data.altitud}</p>
                                        <p>RPM: ${data.rpm}</p>`;
             placeMarker(data.latitud, data.longitud);
+            adjustMapView();
 
             // Actualizar el texto de las RPM dentro del círculo
             const speedText = document.getElementById('speedText');
@@ -283,10 +349,29 @@
             drawSpeedArc((data.rpm / maxRpm) * 100);
         });
 
+        socket.on('coordenadas1', function(data) {
+            const coordinatesContainer1 = document.getElementById('coordinates1');
+            coordinatesContainer1.innerHTML = `<p><strong>Carro Negro</strong></p>
+                                       <p>Latitud: ${data.latitud1}</p>
+                                       <p>Longitud: ${data.longitud1}</p>
+                                       <p>Fecha: ${data.fecha1}</p>
+                                       <p>Altitud: ${data.altitud1}</p>`;
+            placeMarker1(data.latitud1, data.longitud1);
+            adjustMapView();
+            // Actualizar el texto de las RPM dentro del círculo
+        });
+
         map.on('load', function() {
             map.invalidateSize();
             map.setView([0, 0], 2);
         });
+        function adjustMapView() {
+            // Obtener las coordenadas de ambos marcadores
+            const bounds = L.latLngBounds(coordinates.concat(coordinates1));
+
+            // Ajustar la vista del mapa para mostrar ambos marcadores
+            map.fitBounds(bounds);
+        }
     </script>
 
     <!-- Script para el círculo de velocidad de Waze -->
@@ -356,5 +441,5 @@
         svg.appendChild(speedText);
         svg.appendChild(rpmText);
     </script>
-</body>
+</body> 
 </html>
