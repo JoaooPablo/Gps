@@ -295,9 +295,7 @@
             }
 
             if (coordinates.length > 1) {
-                if (routeControl) {
-                    routeControl.remove();
-                }
+
                 routeControl = L.Routing.control({
                     waypoints: coordinates.map(coord => L.latLng(coord[0], coord[1])),
                     createMarker: function() { return null; },
@@ -330,9 +328,6 @@
             map.setView([latitude1, longitude1], );
 
             if (coordinates1.length > 1) {
-                if (routeControl1) {
-                    routeControl1.remove();
-                }
                 routeControl1 = L.Routing.control({
                     waypoints: coordinates1.map(coord => L.latLng(coord[0], coord[1])),
                     createMarker: function() { return null; },
