@@ -292,6 +292,9 @@
             map.setView([latitude, longitude], );
 
             if (coordinates.length > 1) {
+                if (routeControl) {
+                    routeControl.remove();
+                }
 
                 routeControl = L.Routing.control({
                     waypoints: coordinates.map(coord => L.latLng(coord[0], coord[1])),
@@ -320,6 +323,9 @@
             if (marker1) {
                 map.removeLayer(marker1);
             }
+            if (routeControl1) {
+                    routeControl1.remove();
+                }
 
             marker1 = L.marker([latitude1, longitude1], {icon: myIcon1}).addTo(map);
             map.setView([latitude1, longitude1], );
