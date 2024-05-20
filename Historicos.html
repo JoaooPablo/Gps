@@ -221,6 +221,7 @@
             <select id="car-select" class="select" disabled onchange="changeIcon()">
                 <option value="red">Carro Rojo</option>
                 <option value="black">Carro Negro</option>
+                <option value="both">Ambos Carros</option>
             </select>
             <button id="filter-button" class="card">Filter</button>
         </div>
@@ -249,8 +250,8 @@
         }
 
         var map = L.map('map').setView([10.9685, -74.7813], 13);
-        var polyline;
-        var marker;
+        var polyline, polyline1;
+        var marker, marker2;
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
@@ -308,124 +309,137 @@
             const endDate = document.getElementById('end-date-time').value;
             const selectedCar = document.getElementById('car-select').value;
 
+            if (polyline) map.removeLayer(polyline);
+            if (polyline1) map.removeLayer(polyline1);
+            if (marker) map.removeLayer(marker);
+            if (marker2) map.removeLayer(marker2);
+
             if (startDate && endDate && endDate < startDate) {
                 document.getElementById('end-date-time').value = startDate;
                 alert('La fecha y hora de fin no puede ser anterior a la fecha y hora de inicio.');
-                if (polyline) {
-                    map.removeLayer(polyline);
-                }
-                if (marker) {
-                    map.removeLayer(marker);
-                }
                 return;
             }
 
             let url;
             if (selectedCar === 'black') {
-                url = `/filtrar1?inicio=${startDate}&fin=${endDate}&car=${selectedCar}`;
-            } else {
-                url = `/filtrar?inicio=${startDate}&fin=${endDate}&car=${selectedCar}`;
+                url = `/filtrar1?inicio=${startDate}&fin=${endDate}`;
+            } else if (selectedCar === 'red') {
+                url = `/filtrar?inicio=${startDate}&fin=${endDate}`;
+            } else if (selectedCar === 'both') {
+                url = `/combinar-coordenadas?inicio=${startDate}&fin=${endDate}`;
             }
+
             const response = await fetch(url);
             const data = await response.json();
 
-            if (data.length > 0) {
-                const latLngs = data.map(item => [parseFloat(item.latitud), parseFloat(item.longitud)]);
-                if (latLngs.length > 0) {
-                    let color;
-                    if (selectedCar === 'black') {
-                        color = 'red'; // Cambiar a rojo para carro negro
+            if (selectedCar === 'both') {
+                if (data.coordinates1.length > 0 || data.coordinates2.length > 0) {
+                    const datosDePolilinea = data.coordinates1.map(dato => ({
+                        latLng: [dato.latitud, dato.longitud],
+                        fecha: dato.fecha,
+                        RPM: dato.RPM
+                    }));
+                    const datosDePolilinea2 = data.coordinates2.map(dato => ({
+                        latLng: [dato.latitud, dato.longitud],
+                        fecha: dato.fecha
+                    }));
+                    const datosCombinados = datosDePolilinea.concat(datosDePolilinea2).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+                    const latLngs1 = datosDePolilinea.map(d => d.latLng);
+                    const latLngs2 = datosDePolilinea2.map(d => d.latLng);
+                    polyline = L.polyline(latLngs1, { color: 'blue' }).addTo(map);
+                    polyline1 = L.polyline(latLngs2, { color: 'red' }).addTo(map);
+
+                    const lastLatLng1 = latLngs1[latLngs1.length - 1];
+                    const lastLatLng2 = latLngs2[latLngs2.length - 1];
+                    marker = L.marker(lastLatLng1, { icon: customIconRed }).addTo(map);
+                    marker2 = L.marker(lastLatLng2, { icon: customIconBlack }).addTo(map);
+                    const bounds1 = polyline.getBounds();
+                    const bounds2 = polyline1.getBounds();
+                    const combinedBounds = bounds1.extend(bounds2);
+                    map.fitBounds(combinedBounds);
+                    const ultimoValor = datosCombinados[datosCombinados.length - 1];
+
+                    if (ultimoValor.RPM !== undefined) {
+                            marker.bindPopup(`Date: ${ultimoValor.fecha}<br>RPM: ${ultimoValor.RPM}`).openPopup();
                     } else {
-                        color = 'blue'; // Mantener azul para carro rojo
+                            marker2.bindPopup(`Date: ${ultimoValor.fecha}`).openPopup();
                     }
-                    if (polyline) {
-                        map.removeLayer(polyline);
-                    }
-                    polyline = L.polyline(latLngs, {color: color}).addTo(map);
-
-                    map.fitBounds(polyline.getBounds());
-
-                    const lastIndex = data.length - 1;
-                    const lastLatLng = [parseFloat(data[lastIndex].latitud), parseFloat(data[lastIndex].longitud)];
-
-                    if (marker) {
-                        map.panTo(lastLatLng);
-                        marker.setLatLng(lastLatLng);
-                        if (selectedCar === 'red') {
-                            marker.setIcon(customIconRed);
-                            marker.bindPopup(`Date: ${data[lastIndex].fecha}<br>RPM: ${data[lastIndex].RPM}`).openPopup();
-                        } else {
-                            marker.setIcon(customIconBlack);
-                            marker.bindPopup(`Date: ${data[lastIndex].fecha}`).openPopup();
-                        }
-                    } else {
-                        if (selectedCar === 'red') {
-                            marker = L.marker(lastLatLng, { icon: customIconRed }).bindPopup(`Date: ${data[lastIndex].fecha}<br>RPM: ${data[lastIndex].RPM}`).addTo(map);
-                        } else {
-                            marker = L.marker(lastLatLng, { icon: customIconBlack }).bindPopup(`Date: ${data[lastIndex].fecha}`).addTo(map);
-                        }
-                    }
+            
 
                     const slider = document.getElementById('data-slider');
-                    slider.max = lastIndex;
-                    slider.value = lastIndex;
+                    slider.max = datosCombinados.length - 1;
+                    slider.value = datosCombinados.length - 1;
                     document.getElementById('slider-container').style.display = 'flex';
 
-                    slider.addEventListener('input', function() {
+                    slider.oninput = function() {
+                        const index = parseInt(this.value);
+                        const selectedData = datosCombinados[index];
+                        moveMarkers(selectedData);
+                    };
+                    document.getElementById('filtered-data-container').style.display = 'none';
+                } else {
+                    alert('No se encontraron datos para el período seleccionado.');
+                    document.getElementById('filtered-data-container').style.display = 'block';
+                    document.getElementById('slider-container').style.display = 'none';
+                }
+            } else {
+                if (data.length > 0) {
+                    const latLngs = data.map(item => [parseFloat(item.latitud), parseFloat(item.longitud)]);
+                    polyline = L.polyline(latLngs, { color: selectedCar === 'black' ? 'red' : 'blue' }).addTo(map);
+                    map.fitBounds(polyline.getBounds());
+
+                    const lastLatLng = latLngs[latLngs.length - 1];
+                    marker = L.marker(lastLatLng, { icon: selectedCar === 'red' ? customIconRed : customIconBlack }).addTo(map);
+                    marker.bindPopup(`Date: ${data[data.length - 1].fecha}` + (selectedCar === 'red' ? `<br>RPM: ${data[data.length - 1].RPM}` : '')).openPopup();
+
+                    const slider = document.getElementById('data-slider');
+                    slider.max = data.length - 1;
+                    slider.value = data.length - 1;
+                    document.getElementById('slider-container').style.display = 'flex';
+
+                    slider.oninput = function() {
                         const index = parseInt(this.value);
                         const selectedData = data[index];
                         moveMarker(selectedData);
-                    });
-
+                    };
                     document.getElementById('filtered-data-container').style.display = 'none';
+                } else {
+                    alert('No se encontraron datos para el período seleccionado.');
+                    document.getElementById('filtered-data-container').style.display = 'block';
+                    document.getElementById('slider-container').style.display = 'none';
+                }
+            }
+        }
+
+        function moveMarkers(data) {
+            if (data.RPM !== undefined) {
+                const latLngRed = [parseFloat(data.latLng[0]), parseFloat(data.latLng[1])];
+                if (marker) {
+                    marker.setLatLng(latLngRed);
+                    marker.bindPopup(`Date: ${data.fecha}<br>RPM: ${data.RPM}`).openPopup();
                 }
             } else {
-                alert('No se encontraron datos para el período seleccionado.');
-                if (polyline) {
-                    map.removeLayer(polyline);
+                const latLngBlack = [parseFloat(data.latLng[0]), parseFloat(data.latLng[1])];
+                if (marker2) {
+                    marker2.setLatLng(latLngBlack);
+                    marker2.bindPopup(`Date: ${data.fecha}`).openPopup();
                 }
-                if (marker) {
-                    map.removeLayer(marker);
-                }
-                document.getElementById('filtered-data-container').style.display = 'block';
-                document.getElementById('slider-container').style.display = 'none';
             }
+            const bounds = L.latLngBounds([marker.getLatLng(), marker2.getLatLng()]);
+            map.fitBounds(bounds, { padding: [100, 100] });
         }
 
         function moveMarker(data) {
             const latLng = [parseFloat(data.latitud), parseFloat(data.longitud)];
-
             if (marker) {
-                map.panTo(latLng);
                 marker.setLatLng(latLng);
-                if (marker.options.icon === customIconRed) {
-                    marker.bindPopup(`Date: ${data.fecha}<br>RPM: ${data.RPM}`).openPopup();
-                } else {
-                    marker.bindPopup(`Date: ${data.fecha}`).openPopup();
-                }
+                marker.bindPopup(`Date: ${data.fecha}` + (data.RPM ? `<br>RPM: ${data.RPM}` : '')).openPopup();
             }
-        }
+            const bounds = L.latLngBounds([marker.getLatLng()]);
+            map.fitBounds(bounds, { padding: [100, 100] });
 
-        function changeIcon() {
-            const selectedCar = document.getElementById('car-select').value;
-            if (selectedCar === 'black') {
-                if (marker) {
-                    marker.setIcon(customIconBlack);
-                    if (marker.options.icon === customIconRed) {
-                        marker.closePopup();
-                    }
-                }
-            } else {
-                if (marker) {
-                    marker.setIcon(customIconRed);
-                    if (marker.options.icon === customIconBlack) {
-                        marker.closePopup();
-                    }
-                }
-            }
         }
-
-        // Función para habilitar o deshabilitar el select de carro según si se seleccionan las fechas
         function toggleCarSelect() {
             const startDate = document.getElementById('start-date-time').value;
             const endDate = document.getElementById('end-date-time').value;
@@ -445,4 +459,3 @@
     </script>
 </body>
 </html>
-
