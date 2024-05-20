@@ -280,6 +280,7 @@
         var coordinates1 = [];
         var polyline1;
         var routeControl1;
+        adjustMapView()
 
         function placeMarker(latitude, longitude) {
             coordinates.push([latitude, longitude]);
@@ -310,7 +311,7 @@
                     fitSelectedRoutes: false
                 }).addTo(map)
             }else {
-                map.setView([latitude, longitude], 14);
+                adjustMapView()
             }
         }
 
@@ -340,7 +341,7 @@
                     fitSelectedRoutes: false
                 }).addTo(map)
             }else {
-                map.setView([latitude, longitude], 14);
+                adjustMapView()
             }
         }
 
