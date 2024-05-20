@@ -153,6 +153,38 @@ app.get('/filtrar1', (req, res) => {
     res.json(results);
   });
 });
+app.get('/combinar-coordenadas', (req, res) => {
+    const fechaInicio = req.query.inicio;
+    const fechaFin = req.query.fin;
+
+    // Consultar datos de la primera tabla
+    dbConnection.query('SELECT fecha, latitud, longitud, altitud, RPM FROM coordenadas WHERE fecha BETWEEN ? AND ? ORDER BY fecha ASC', [fechaInicio, fechaFin], (error1, results1) => {
+        if (error1) {
+            console.error('Error al filtrar datos de coordenadas:', error1);
+            res.status(500).json({ error: 'Error al filtrar datos de coordenadas' });
+            return;
+        }
+
+        // Consultar datos de la segunda tabla
+        dbConnection.query('SELECT fecha, latitud, longitud, altitud FROM coordenadas1 WHERE fecha BETWEEN ? AND ? ORDER BY fecha ASC', [fechaInicio, fechaFin], (error2, results2) => {
+            if (error2) {
+                console.error('Error al filtrar datos de coordenadas1:', error2);
+                res.status(500).json({ error: 'Error al filtrar datos de coordenadas1' });
+                return;
+            }
+
+            // Combinar los resultados de ambas consultas
+            const combinedResults = [...results1, ...results2];
+
+            // Ordenar los resultados combinados por fecha ascendente
+
+            combinedResults.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+            // Enviar los resultados de cada tabla y los combinados en la respuesta
+            res.json({ coordinates1: results1, coordinates2: results2, combinedCoordinates: combinedResults });
+        });
+    });
+});
 // Ruta para el cliente web
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index1.html');
