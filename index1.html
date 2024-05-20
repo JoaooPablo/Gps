@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GlobalEye</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
     <style>
         body, html {
             background-color: #141414;
@@ -232,6 +233,7 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
     <script>
         var sidebarOpen = false;
 
@@ -274,8 +276,10 @@
 
         var coordinates = [];
         var polyline;
+        var routeControl;
         var coordinates1 = [];
         var polyline1;
+        var routeControl1;
 
         function placeMarker(latitude, longitude) {
             coordinates.push([latitude, longitude]);
@@ -286,12 +290,27 @@
 
             marker = L.marker([latitude, longitude], {icon: myIcon}).addTo(map);
             map.setView([latitude, longitude], );
+            if (routeControl) {
+                map.removeControl(routeControl);
+            }
 
             if (coordinates.length > 1) {
                 if (polyline) {
                     map.removeLayer(polyline);
                 }
-                polyline = L.polyline(coordinates, { color: 'blue' }).addTo(map);
+                routeControl = L.Routing.control({
+                    waypoints: coordinates.map(coord => L.latLng(coord[0], coord[1])),
+                    createMarker: function() { return null; },
+                    lineOptions: {
+                        styles: [{ color: 'red', opacity: 1, weight: 5 }],
+                        addWaypoints: false,
+                        extendToWaypoints: false,
+                        missingRouteTolerance: 0
+                    },
+                    fitSelectedRoutes: false
+                }).addTo(map)
+            }else {
+                map.setView([latitude, longitude], 14);
             }
         }
 
@@ -309,7 +328,19 @@
                 if (polyline1) {
                     map.removeLayer(polyline1);
                 }
-                polyline1 = L.polyline(coordinates1, { color: 'red' }).addTo(map);
+                routeControl1 = L.Routing.control({
+                    waypoints: coordinates1.map(coord => L.latLng(coord[0], coord[1])),
+                    createMarker: function() { return null; },
+                    lineOptions: {
+                        styles: [{ color: 'blue', opacity: 1, weight: 5 }],
+                        addWaypoints: false,
+                        extendToWaypoints: false,
+                        missingRouteTolerance: 0
+                    },
+                    fitSelectedRoutes: false
+                }).addTo(map)
+            }else {
+                map.setView([latitude, longitude], 14);
             }
         }
 
