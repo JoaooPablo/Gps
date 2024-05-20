@@ -178,6 +178,17 @@
             border-radius: 50%;
             border: 2px solid #fff;
         }
+        .select {
+            background-color: #2F2F2F;
+            border: solid 1px #424242;
+            color: #fff;
+            border-radius: 5px;
+            margin: 0.5rem;
+            padding: 1rem;
+            flex: 1; /* Ajusta el ancho automáticamente */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
 
 
     </style>
@@ -198,7 +209,7 @@
     </ul>
     <div style="text-align: center;">
         <label for="car-selection" style="margin-right: 10px;">Selecciona un carro:</label>
-        <select id="car-selection">
+        <select id="car-selection" class="select">
             <option value="both">Ambos Carros</option>
             <option value="red">Carro Rojo</option>
             <option value="black">Carro Negro</option>
