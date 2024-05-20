@@ -205,14 +205,14 @@
 
     <h1 id="title">Global Eye</h1>
     <ul class="centered-list">
-        <li>Rastreo GPS en tiempo real</li>
+        <li>Real-time GPS tracking</li>
     </ul>
     <div style="text-align: center;">
-        <label for="car-selection" style="margin-right: 10px;">Selecciona un carro:</label>
+        <label for="car-selection" style="margin-right: 10px;">Select a car:</label>
         <select id="car-selection" class="select">
-            <option value="both">Ambos Carros</option>
-            <option value="red">Carro Rojo</option>
-            <option value="black">Carro Negro</option>
+            <option value="both">Both Cars</option>
+            <option value="red">Red Car</option>
+            <option value="black">Black Car</option>
         </select>
     </div>
     <div id="map"></div>
@@ -320,7 +320,7 @@
                 const lastCoordinate = data.lastCoordinate;
                 if (lastCoordinate) {
                     const coordinatesContainer = document.getElementById('coordinates');
-                    coordinatesContainer.innerHTML =`<p><strong>Carro Rojo</strong></p>
+                    coordinatesContainer.innerHTML =`<p><strong>Red Car</strong></p>
                                                <p>Latitud: ${lastCoordinate.latitud}</p>
                                                <p>Longitud: ${lastCoordinate.longitud}</p>
                                                <p>Fecha: ${lastCoordinate.fecha}</p>
@@ -349,7 +349,7 @@
                 const lastCoordinate1 = data.lastCoordinate1;
                 if (lastCoordinate1) {
                     const coordinatesContainer1 = document.getElementById('coordinates1');
-                    coordinatesContainer1.innerHTML = `<p><strong>Carro Negro</strong></p>
+                    coordinatesContainer1.innerHTML = `<p><strong>Black Car</strong></p>
                                                <p>Latitud: ${lastCoordinate1.latitud}</p>
                                                <p>Longitud: ${lastCoordinate1.longitud}</p>
                                                <p>Fecha: ${lastCoordinate1.fecha}</p>
