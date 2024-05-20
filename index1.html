@@ -295,8 +295,8 @@
             }
 
             if (coordinates.length > 1) {
-                if (polyline) {
-                    map.removeLayer(polyline);
+                if (routeControl) {
+                    routeControl.remove();
                 }
                 routeControl = L.Routing.control({
                     waypoints: coordinates.map(coord => L.latLng(coord[0], coord[1])),
@@ -307,7 +307,12 @@
                         extendToWaypoints: false,
                         missingRouteTolerance: 0
                     },
-                    fitSelectedRoutes: false
+                    fitSelectedRoutes: false,
+                    routeWhileDragging: false,
+                    plan: L.Routing.plan([], {
+                        createMarker: function() { return null; },
+                        show: false // Oculta las instrucciones
+                    })
                 }).addTo(map)
             }else {
                 adjustMapView()
@@ -325,8 +330,8 @@
             map.setView([latitude1, longitude1], );
 
             if (coordinates1.length > 1) {
-                if (polyline1) {
-                    map.removeLayer(polyline1);
+                if (routeControl1) {
+                    routeControl1.remove();
                 }
                 routeControl1 = L.Routing.control({
                     waypoints: coordinates1.map(coord => L.latLng(coord[0], coord[1])),
@@ -337,7 +342,12 @@
                         extendToWaypoints: false,
                         missingRouteTolerance: 0
                     },
-                    fitSelectedRoutes: false
+                    fitSelectedRoutes: false,
+                    routeWhileDragging: false,
+                    plan: L.Routing.plan([], {
+                        createMarker: function() { return null; },
+                        show: false // Oculta las instrucciones
+                    })
                 }).addTo(map)
             }else {
                 adjustMapView()
@@ -427,8 +437,8 @@
                 if (marker) {
                     map.removeLayer(marker);
                 }
-                if (polyline) {
-                    map.removeLayer(polyline);
+                if (routeControl) {
+                    routeControl.remove();
                 }
             }
         });
@@ -458,8 +468,8 @@
                 if (marker1) {
                     map.removeLayer(marker1);
                 }
-                if (polyline1) {
-                    map.removeLayer(polyline1);
+                if (routeControl1) {
+                    routeControl1.remove();
                 }
             }
             // Actualizar el texto de las RPM dentro del círculo
