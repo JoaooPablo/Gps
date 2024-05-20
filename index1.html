@@ -290,9 +290,6 @@
 
             marker = L.marker([latitude, longitude], {icon: myIcon}).addTo(map);
             map.setView([latitude, longitude], );
-            if (routeControl) {
-                map.removeControl(routeControl);
-            }
 
             if (coordinates.length > 1) {
 
