@@ -376,6 +376,7 @@
         getAndShowLastCoordinate1("both");
 
         socket.on('coordenadas', function(data) {
+            const selectedValue = document.getElementById('car-selection').value;
             const coordinatesContainer = document.getElementById('coordinates');
             coordinatesContainer.innerHTML = `<p><strong>Carro Rojo</strong></p>
                                        <p>Latitud: ${data.latitud}</p>
@@ -383,8 +384,6 @@
                                        <p>Fecha: ${data.fecha}</p>
                                        <p>Altitud: ${data.altitud}</p>
                                        <p>RPM: ${data.rpm}</p>`;
-            placeMarker(data.latitud, data.longitud);
-            adjustMapView();
             const speedText = document.getElementById('speedText');
             speedText.textContent = data.rpm;
             drawSpeedArc((data.rpm / maxRpm) * 100);
@@ -393,6 +392,10 @@
                 if (marker) {
                     map.removeLayer(marker);
                 }
+            } else{
+                placeMarker(data.latitud, data.longitud);
+                adjustMapView();
+
             }
         });
 
@@ -414,6 +417,10 @@
                     map.removeLayer(marker1);
                 }
                 
+            } else{
+                placeMarker1(data.latitud1, data.longitud1);
+                adjustMapView();
+
             }
         });
 
