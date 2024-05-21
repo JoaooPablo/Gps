@@ -350,18 +350,17 @@
                                        <p>Fecha: ${data.fecha}</p>
                                        <p>Altitud: ${data.altitud}</p>
                                        <p>RPM: ${data.rpm}</p>`;
-                placeMarker(data.latitud, data.longitud);
-                adjustMapView();
-                const speedText = document.getElementById('speedText');
-                speedText.textContent = data.rpm;
-                drawSpeedArc((data.rpm / maxRpm) * 100);
+            placeMarker(data.latitud, data.longitud);
+            adjustMapView();
+            const speedText = document.getElementById('speedText');
+            speedText.textContent = data.rpm;
+            drawSpeedArc((data.rpm / maxRpm) * 100);
         
         });
 
 
 
         socket.on('coordenadas1', function(data) {
-            const selectedValue = document.getElementById('car-selection').value;
             const coordinatesContainer1 = document.getElementById('coordinates1');
             coordinatesContainer1.innerHTML = `<p><strong>Carro Negro</strong></p>
                                        <p>Latitud: ${data.latitud1}</p>
@@ -369,10 +368,9 @@
                                        <p>Fecha: ${data.fecha1}</p>
                                        <p>Altitud: ${data.altitud1}</p>`;
            
-                placeMarker1(data.latitud1, data.longitud1);
-                adjustMapView();
+            placeMarker1(data.latitud1, data.longitud1);
+            adjustMapView();
 
-            // Actualizar el texto de las RPM dentro del círculo
         });
 
 
