@@ -178,17 +178,6 @@
             border-radius: 50%;
             border: 2px solid #fff;
         }
-        .select {
-            background-color: #2F2F2F;
-            border: solid 1px #424242;
-            color: #fff;
-            border-radius: 5px;
-            margin: 0.5rem;
-            padding: 0.5rem;
-            flex: 1; /* Ajusta el ancho automáticamente */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
 
 
     </style>
@@ -205,7 +194,7 @@
 
     <h1 id="title">Global Eye</h1>
     <ul class="centered-list">
-        <li>Real-time GPS tracking</li>
+        <li>Rastreo GPS en tiempo real</li>
     </ul>
     <div id="map"></div>
     <div id="data-container">
@@ -226,7 +215,6 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         var sidebarOpen = false;
-
 
         // Función para abrir o cerrar el sidebar
         function toggleSidebar() {
@@ -300,21 +288,21 @@
             }
         }
 
-        function getAndShowLastCoordinate(selectedValue) {
+        function getAndShowLastCoordinate() {
             fetch('/last-coordinate')
             .then(response => response.json())
             .then(data => {
                 const lastCoordinate = data.lastCoordinate;
                 if (lastCoordinate) {
                     const coordinatesContainer = document.getElementById('coordinates');
-                    coordinatesContainer.innerHTML =`<p><strong>Red Car</strong></p>
+                    coordinatesContainer.innerHTML =`<p><strong>Carro Rojo</strong></p>
                                                <p>Latitud: ${lastCoordinate.latitud}</p>
                                                <p>Longitud: ${lastCoordinate.longitud}</p>
                                                <p>Fecha: ${lastCoordinate.fecha}</p>
                                                <p>Altitud: ${lastCoordinate.altitud}</p>
                                                <p>RPM: ${lastCoordinate.RPM}</p>`;
-                        placeMarker(lastCoordinate.latitud, lastCoordinate.longitud);
-                        adjustMapView()
+                    placeMarker(lastCoordinate.latitud, lastCoordinate.longitud);
+                    adjustMapView();
                 }
             })
             .catch(error => console.error('Error al obtener la última coordenada:', error));
@@ -322,14 +310,14 @@
 
         getAndShowLastCoordinate();
 
-        function getAndShowLastCoordinate1(selectedValue) {
+        function getAndShowLastCoordinate1() {
             fetch('/last-coordinate1')
             .then(response => response.json())
             .then(data => {
                 const lastCoordinate1 = data.lastCoordinate1;
                 if (lastCoordinate1) {
                     const coordinatesContainer1 = document.getElementById('coordinates1');
-                    coordinatesContainer1.innerHTML = `<p><strong>Black Car</strong></p>
+                    coordinatesContainer1.innerHTML = `<p><strong>Carro Negro</strong></p>
                                                <p>Latitud: ${lastCoordinate1.latitud}</p>
                                                <p>Longitud: ${lastCoordinate1.longitud}</p>
                                                <p>Fecha: ${lastCoordinate1.fecha}</p>
@@ -352,13 +340,14 @@
                                        <p>RPM: ${data.rpm}</p>`;
             placeMarker(data.latitud, data.longitud);
             adjustMapView();
+
+            // Actualizar el texto de las RPM dentro del círculo
             const speedText = document.getElementById('speedText');
             speedText.textContent = data.rpm;
+
+            // Actualizar el arco de velocidad
             drawSpeedArc((data.rpm / maxRpm) * 100);
-        
         });
-
-
 
         socket.on('coordenadas1', function(data) {
             const coordinatesContainer1 = document.getElementById('coordinates1');
@@ -367,13 +356,10 @@
                                        <p>Longitud: ${data.longitud1}</p>
                                        <p>Fecha: ${data.fecha1}</p>
                                        <p>Altitud: ${data.altitud1}</p>`;
-           
             placeMarker1(data.latitud1, data.longitud1);
             adjustMapView();
-
+            // Actualizar el texto de las RPM dentro del círculo
         });
-
-
 
         map.on('load', function() {
             map.invalidateSize();
