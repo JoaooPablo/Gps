@@ -207,14 +207,6 @@
     <ul class="centered-list">
         <li>Real-time GPS tracking</li>
     </ul>
-    <div style="text-align: center;">
-        <label for="car-selection" style="margin-right: 10px;">Select a car:</label>
-        <select id="car-selection" class="select">
-            <option value="both">Both Cars</option>
-            <option value="red">Red Car</option>
-            <option value="black">Black Car</option>
-        </select>
-    </div>
     <div id="map"></div>
     <div id="data-container">
         <div id="coordinates">
@@ -235,11 +227,6 @@
     <script>
         var sidebarOpen = false;
 
-        document.getElementById('car-selection').addEventListener('change', function() {
-            const selectedValue = this.value;
-            getAndShowLastCoordinate(selectedValue);
-            getAndShowLastCoordinate1(selectedValue);
-        });
 
         // Función para abrir o cerrar el sidebar
         function toggleSidebar() {
@@ -326,21 +313,14 @@
                                                <p>Fecha: ${lastCoordinate.fecha}</p>
                                                <p>Altitud: ${lastCoordinate.altitud}</p>
                                                <p>RPM: ${lastCoordinate.RPM}</p>`;
-                    if (selectedValue === "both" || selectedValue === "red"){
                         placeMarker(lastCoordinate.latitud, lastCoordinate.longitud);
-                        adjustMapView();
-                    }else {
-                        if (marker) {
-                            map.removeLayer(marker);
-                        }
-
-                    }
+                        adjustMapView()
                 }
             })
             .catch(error => console.error('Error al obtener la última coordenada:', error));
         }
 
-        getAndShowLastCoordinate('both');
+        getAndShowLastCoordinate();
 
         function getAndShowLastCoordinate1(selectedValue) {
             fetch('/last-coordinate1')
@@ -354,20 +334,13 @@
                                                <p>Longitud: ${lastCoordinate1.longitud}</p>
                                                <p>Fecha: ${lastCoordinate1.fecha}</p>
                                                <p>Altitud: ${lastCoordinate1.altitud}</p`;
-                    if (selectedValue === "both" || selectedValue === "black"){
-                        placeMarker1(lastCoordinate1.latitud, lastCoordinate1.longitud);
-                        adjustMapView();
-                    }else {
-                        if (marker1) {
-                            map.removeLayer(marker1);
-                        }
-
-                    }
+                    placeMarker1(lastCoordinate1.latitud, lastCoordinate1.longitud);
+                    adjustMapView();
                 }
             })
             .catch(error => console.error('Error al obtener la última coordenada:', error));
         }
-        getAndShowLastCoordinate1("both");
+        getAndShowLastCoordinate1();
 
         socket.on('coordenadas', function(data) {
             const coordinatesContainer = document.getElementById('coordinates');
@@ -377,29 +350,12 @@
                                        <p>Fecha: ${data.fecha}</p>
                                        <p>Altitud: ${data.altitud}</p>
                                        <p>RPM: ${data.rpm}</p>`;
-            if (selectedValue === 'both' || selectedValue === 'red') {
                 placeMarker(data.latitud, data.longitud);
-                if (SelectedValue === 'red') {
-                    const bounds = L.latLngBounds(coordinates);
-                    map.fitBounds(bounds);
-
-                }
-                if (SelectedValue === 'both') {
-                    adjustMapView();
-
-                }
                 adjustMapView();
                 const speedText = document.getElementById('speedText');
                 speedText.textContent = data.rpm;
                 drawSpeedArc((data.rpm / maxRpm) * 100);
-            }else {
-                if (marker) {
-                    map.removeLayer(marker);
-                }
-                if (polyline) {
-                    map.removeLayer(polyline);
-                }
-            }
+        
         });
 
 
@@ -412,25 +368,10 @@
                                        <p>Longitud: ${data.longitud1}</p>
                                        <p>Fecha: ${data.fecha1}</p>
                                        <p>Altitud: ${data.altitud1}</p>`;
-            if (selectedValue === 'both' || selectedValue === 'black') {
+           
                 placeMarker1(data.latitud1, data.longitud1);
-                if (SelectedValue === 'black') {
-                    const bounds = L.latLngBounds(coordinates1);
-                    map.fitBounds(bounds);
+                adjustMapView();
 
-                }
-                if (SelectedValue === 'both') {
-                    adjustMapView();
-
-                }
-            }else {
-                if (marker1) {
-                    map.removeLayer(marker1);
-                }
-                if (polyline1) {
-                    map.removeLayer(polyline1);
-                }
-            }
             // Actualizar el texto de las RPM dentro del círculo
         });
 
